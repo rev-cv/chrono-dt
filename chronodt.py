@@ -282,6 +282,18 @@ class chrono(object):
 		self.incomplete_date_management(False, False, False, True, True, True)
 		return self
 
+	def setTimeAndShift(self, string):
+		#строка в которой передано одновременно может быть передано 
+		#и время и текстовые команды смещения времени типа "15:35 -25m"
+		time = findall(r"\d{1,2}:\d{1,2}", string)
+		if len(time) > 0:
+			t = self.time_from_string(time[0])
+			self.hour = t['hour']
+			self.minute = t['min']
+			self.second = t['second']
+			string = sub(r"(\d{1,2}:\d{1,2})", r"", string)
+		self.shiftTC(string)
+
 	def shift(self, year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0, week = 0):
 		#Если указан год, месяц, то находится следующая дата +следующего года или месяца
 		delta_seconds = second + (minute * 60) + (hour * 3600) +  (day * 86400) + (week * 604800)
@@ -1159,7 +1171,6 @@ class pchrono(object):
 if __name__ == '__main__':
 	import time
 
-	c = chrono(1955, 8, 14)
-	c.setTime("05:0")
-	print(c.format())
+	c = chrono()
+	print(c.format(r"%HMS0"))
 

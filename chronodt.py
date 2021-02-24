@@ -293,6 +293,7 @@ class chrono(object):
 			self.second = t['second']
 			string = sub(r"(\d{1,2}:\d{1,2})", r"", string)
 		self.shiftTC(string)
+		return self
 
 	def shift(self, year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0, week = 0):
 		#Если указан год, месяц, то находится следующая дата +следующего года или месяца

@@ -285,13 +285,10 @@ class chrono(object):
 	def setTimeAndShift(self, string):
 		#строка в которой передано одновременно может быть передано 
 		#и время и текстовые команды смещения времени типа "15:35 -25m"
-		time = findall(r"\d{1,2}:\d{1,2}", string)
+		time = findall(r"\d{1,2}:\d{1,2}|^\d{1,4}", string)
 		if len(time) > 0:
-			t = self.time_from_string(time[0])
-			self.hour = t['hour']
-			self.minute = t['min']
-			self.second = t['second']
-			string = sub(r"(\d{1,2}:\d{1,2})", r"", string)
+			self.setTime(time[0])
+			string = sub(r"(\d{1,2}:\d{1,2}|^\d{1,4})", r"", string)
 		self.shiftTC(string)
 		return self
 

@@ -1064,7 +1064,7 @@ class chrono(object):
 		self1 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
 		self1.shift(day = 1 - wd)
 		self2 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
-		self2.shift(day = 7 - wd)
+		self2.shift(day = 7 - wd + 1)
 		return pchrono(self1, self2, False)	
 
 	def __lt__(self, other):
@@ -1167,8 +1167,16 @@ class pchrono(object):
 		temp = '%Y-%m0-%d0 %H0:%M0:%S0;'
 		return 'Object.PChrono(START {} FINISH {})'.format(self.start.format(temp), self.finish.format(temp))
 
-	def getDiff(self):
-		return self.finish.getUnixEpoch() - self.start.getUnixEpoch()
+	def getDiff(self, arg = "sec"):
+		sec = self.finish.getUnixEpoch() - self.start.getUnixEpoch()
+		if arg == "sec":
+			return sec
+		elif arg == "min":
+			return sec / 60
+		elif arg == "hour":
+			return sec / 3600
+		elif arg == "day":
+			return sec / 86400
 
 	def getScale(self):
 		balance = {'y':0,'d':0,'h':0,'m':0,'s':0}
@@ -1214,11 +1222,15 @@ class pchrono(object):
 		#возвращает процент насколько переданный период входит в текущий период
 		pass
 
+	def generateCalendarPyQt5_GitHub(self, list_chrono):
+		#возвращает заполненный календарь типа GitHub
+		pass
+
 
 
 if __name__ == '__main__':
 	import time
 
-	c = chrono().generateMonth().getHM()
+	c = chrono().generateWeek()
 	print(c)
 

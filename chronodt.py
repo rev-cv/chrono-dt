@@ -459,7 +459,8 @@ class chrono(object):
 
 	def getDecadeYear(self):
 		#ОПРЕДЕЛЕНИЕ ДЕКАДЫ С НАЧАЛА ГОДА
-		return self.month * self.getDecade()
+		d = {3:0,2:1,1:2}
+		return self.month * 3 - d[self.getDecade()]
 
 	def toLocal(self): 
 		#переводит время объекта chrono в локальное

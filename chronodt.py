@@ -1157,11 +1157,11 @@ class pchrono(object):
 			
 		elif start is not None and finish is not None and priority_day is True:
 			self.start = chrono(start).setTime(0, 0, 0)
-			self.finish = chrono(finish).setTime(0, 0, 0).shift(day = 1)
+			self.finish = chrono(finish).setTime(0, 0, 0).toTimeZone(self.start.timezone).shift(day = 1)
 
 		elif start is not None and finish is not None and priority_day is False:
 			self.start = chrono(start)
-			self.finish = chrono(finish)
+			self.finish = chrono(finish).toTimeZone(self.start.timezone)
 
 	def __str__(self):
 		temp = '%Y-%m0-%d0 %H0:%M0:%S0;'
@@ -1205,6 +1205,14 @@ class pchrono(object):
 		h = second // 3600
 		m = (second - (h*3600)) // 60
 		return h, m
+
+	def wellInto(self, date):
+		#проверяет входит ли переданная дата в текущий период
+		pass
+
+	def getPercent(self, pchrono):
+		#возвращает процент насколько переданный период входит в текущий период
+		pass
 
 
 

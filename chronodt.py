@@ -243,14 +243,11 @@ class chrono(object):
 			if str_date == 'now' or str_date == "today":
 				self.setNow()
 			elif str_date == 'yesterday':
-				self.setNow()
 				self.shift(day = -1)
 			elif str_date == 'tomorrow':
-				self.setNow()
 				self.shift(day = 1)
 		else:
 			self.datetime_from_string(str_date)
-
 		return self
 
 	def setQDate(self, qd):
@@ -443,7 +440,7 @@ class chrono(object):
 			return text_century
 
 	def getWeekYear(self): 
-		#ОПРЕДЕЛЕНИЯ НЕДЕЛИ ГОДА С ПЕРВОГО ПОНЕДЕЛЬНИКА ГОДА
+		#ОПРЕДЕЛЕНИЕ НЕДЕЛИ ГОДА С ПЕРВОГО ПОНЕДЕЛЬНИКА ГОДА
 		days_number = self.getDayYear()
 		days_number -= self.getWeekday()
 		week_number = 0
@@ -451,6 +448,18 @@ class chrono(object):
 			days_number -= 7
 			week_number += 1
 		return week_number
+
+	def getDecade(self):
+		#ОПРЕДЕЛЕНИЕ ДЕКАДЫ В МЕСЯЦЕ
+		if self.day < 11: 
+			return 1
+		elif self.day < 21:
+			return 2
+		else: return 3
+
+	def getDecadeYear(self):
+		#ОПРЕДЕЛЕНИЕ ДЕКАДЫ С НАЧАЛА ГОДА
+		return self.month * self.getDecade()
 
 	def toLocal(self): 
 		#переводит время объекта chrono в локальное
@@ -575,10 +584,13 @@ class chrono(object):
 
 		regex = r'%DEC'	#декада месяца
 		if regex in temp:
-			dec = 'III'
-			if self.day < 11: dec = "I"
-			elif self.day < 21: dec = "II"
-			temp = sub(regex, f'{dec} decade of %mE', temp)
+			dec = self.getDecade()
+			temp = sub(regex, f'{dec}th', temp)
+
+		regex = r'%DY'	#декада месяца, но отчет с начала года
+		if regex in temp:
+			dec = self.getDecadeYear()
+			temp = sub(regex, f'{dec}th', temp)
 
 		regex = r'%QUA'	#квартал года
 		if regex in temp:

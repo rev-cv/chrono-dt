@@ -30,7 +30,7 @@ format_weekdays = {
 
 class chrono(object):
 	def __init__(self, arg_1=None, arg_2=None, arg_3=None, hour=None, minute=None, second=None, 
-		year = None, month = None, day = None, shift=None, TimeZone = 'local'):
+		year = None, month = None, day = None, TimeZone = 'local', shift=None):
 		super(chrono, self).__init__()
 		self.unspecified_values = {
 			'year': False,
@@ -58,6 +58,9 @@ class chrono(object):
 		self.input_analysis(arg_1 = arg_1,arg_2 = arg_2,arg_3 = arg_3,
 			year = year, month = month, day = day,
 			hour = hour,minute = minute,second = second)
+
+		if type(shift) is str:
+			self.shiftTC(shift = shift)
 
 	def input_analysis(self, arg_1=None, arg_2=None, arg_3=None, 
 		year = None, month = None, day = None,
@@ -461,6 +464,11 @@ class chrono(object):
 		#ОПРЕДЕЛЕНИЕ ДЕКАДЫ С НАЧАЛА ГОДА
 		d = {3:0,2:1,1:2}
 		return self.month * 3 - d[self.getDecade()]
+
+	def getLastDayMonth(self):
+		d = 1 if self.check_leap_year(self.year) else 0
+		count_days = {1:31,2:28+d,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
+		return count_days[self.month]
 
 	def toLocal(self): 
 		#переводит время объекта chrono в локальное
@@ -1004,14 +1012,60 @@ class chrono(object):
 			list_int_roman.reverse()
 			return ''.join(list_int_roman)
 
-	def generatePeriod(self, obj_chrono = None, result = 'ymdHMS'):
-		#находит большую дату между датой в текущем объекте chrono и переданным
-		#переводит в секунды оба объекта
-		#получившуюся разницу распределяет согласно шаблону. Если в шаблоне указано только S, то 
-		#результат разницы будет передан только в секундах. Если в шаблоне присутствует yS, то
-		#результат будет передан в кол-ве лет и остатка в виде секунд
-		#результат будет возвращен в виде словаря
-		return pchrono(obj_chrono, self, False)
+	def generatePeriod(self, obj_date = None):
+		if obj_date is not None:
+			ue1 = self.getUnixEpoch()
+
+			d2 = chrono(obj_date)
+			if self.timezone != d2.timezone:
+				d2.toTimeZone(self.timezone)
+
+			ue2 = d2.getUnixEpoch()
+			if ue1 > ue2:
+				return pchrono(self, d2, False)
+			elif ue1 < ue2:
+				return pchrono(d2, self, False)
+			else: 
+				return pchrono(self, priority_day = True)
+		else:
+			return self.generateDay()
+
+	def generateDecade(self):
+		#генерирует период декады, в которую входит текущая дата
+		dec = self.getDecade()
+		if dec == 1:
+			self1 = chrono(self.year, self.month, 1, 0, 0, 0, self.timezone)
+			self2 = chrono(self.year, self.month, 11, 0, 0, 0, self.timezone)
+			return pchrono(self1, self2, False)
+		elif dec == 2:
+			self1 = chrono(self.year, self.month, 11, 0, 0, 0, self.timezone)
+			self2 = chrono(self.year, self.month, 21, 0, 0, 0, self.timezone)
+			return pchrono(self1, self2, False)
+		elif dec == 3:
+			self1 = chrono(self.year, self.month, 21, 0, 0, 0, self.timezone)
+			self2 = chrono(self.year, self.month, self.getLastDayMonth(), 0, 0, 0, self.timezone, "+1d")
+			return pchrono(self1, self2, False)
+
+	def generateDay(self):
+		#генерирует период в виде текущего дня
+		self1 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
+		self2 = chrono(self1).shift(day=1)
+		return pchrono(self1, self2, False)	
+
+	def generateMonth(self):
+		#генерирует период месяца, в который входит текущая дата
+		self1 = chrono(self.year, self.month, 1, 0, 0, 0, self.timezone)
+		self2 = chrono(self.year, self.month, self.getLastDayMonth(), 0, 0, 0, self.timezone).shift(day=1)
+		return pchrono(self1, self2, False)		
+
+	def generateWeek(self):
+		#генерирует период недели (понедельник - воскресенье), в которую входит текущая дата
+		wd = self.getWeekday()
+		self1 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
+		self1.shift(day = 1 - wd)
+		self2 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
+		self2.shift(day = 7 - wd)
+		return pchrono(self1, self2, False)	
 
 	def __lt__(self, other):
 		#x < y
@@ -1054,18 +1108,15 @@ class chrono(object):
 
 	def __sub__(self, other):
 		#chrono_1 - chrono_2 вернет период двух объектов хроно через self.getDifferent(other)
-		#print(other.format())
 		return self.generatePeriod(other)
-
 
 class pchrono(object):
 	def __init__(self, start = None, finish = None, priority_day = True):
+		super(pchrono, self).__init__()
+
 		#priority_day = True - ориентироваться на период длиной в днях
 		#priority_day = False - ориентируется на данные о неполной дате и времени
-		
-		#если start == вчера, то start это сегодня вычесть сутки
 
-		super(pchrono, self).__init__()
 		if start is None and finish is None:
 			self.start = chrono().setTime(0, 0, 0)
 			self.finish = chrono(self.start).shift(day = 1)
@@ -1116,34 +1167,12 @@ class pchrono(object):
 		temp = '%Y-%m0-%d0 %H0:%M0:%S0;'
 		return 'Object.PChrono(START {} FINISH {})'.format(self.start.format(temp), self.finish.format(temp))
 
-	def formatDiff(self, temp = ''):
-		pass
-
-	def getSecondsDiff(self):
+	def getDiff(self):
 		return self.finish.getUnixEpoch() - self.start.getUnixEpoch()
-
-	def check_dates(self, date):
-		if date.isdatetime():
-			start = date
-			finish = date
-		if date.isdate(): 
-			#нужно найти период конкретного дня
-			start = hrono(date.year, date.month, date.day, 0, 0, 0)
-			finish = hrono(date.year, date.month, date.day, 23, 59, 59)
-		elif date.year is not None and date.month is not None:
-			#нужно найти период конкретного месяца
-			ly0 = 1 if date.check_leap_year(date.year) is True else 0
-			cd = {1:31,2:28+ly0,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
-			start = hrono(date.year, date.month, 1, 0, 0, 0)
-			finish = hrono(date.year, date.month, cd[date.month], 23, 59, 59)
-		elif date.year is not None:
-			start = hrono(date.year, 1, 1, 0, 0, 0)
-			finish = hrono(date.year, 12, 31, 23, 59, 59)
-		return start, finish
 
 	def getScale(self):
 		balance = {'y':0,'d':0,'h':0,'m':0,'s':0}
-		seconds = self.getSecondsDiff()
+		seconds = self.getDiff()
 		by = seconds // (86400 * 365)
 		bd = (seconds - (by * 86400 * 365)) // 86400
 		bh = (seconds - (bd * 86400)) // 3600
@@ -1157,22 +1186,22 @@ class pchrono(object):
 		return balance
 
 	def getPercentDay(self):
-		return round(self.getSecondsDiff() * 100 / 86400, 1)
+		return round(self.getDiff() * 100 / 86400, 1)
 
 	def getPercentWeek(self):
-		return round(self.getSecondsDiff() * 100 / (86400 * 7), 1)
+		return round(self.getDiff() * 100 / (86400 * 7), 1)
 
 	def getPercentYear(self):
-		return round(self.getSecondsDiff() * 100 / (86400 * 365), 1)
+		return round(self.getDiff() * 100 / (86400 * 365), 1)
 
 	def getPercentDecade(self):
-		return round(self.getSecondsDiff() * 100 / (86400 * 365 * 10 + 2), 1)
+		return round(self.getDiff() * 100 / (86400 * 365 * 10 + 2), 1)
 
 	def getPercentCentury(self):
-		return round(self.getSecondsDiff() * 100 / (86400 * 365 * 100 + 25), 1)
+		return round(self.getDiff() * 100 / (86400 * 365 * 100 + 25), 1)
 
 	def getHM(self):
-		second = self.getSecondsDiff()
+		second = self.getDiff()
 		h = second // 3600
 		m = (second - (h*3600)) // 60
 		return h, m
@@ -1182,6 +1211,6 @@ class pchrono(object):
 if __name__ == '__main__':
 	import time
 
-	c = chrono()
-	print(c.format(r"%HMS0"))
+	c = chrono().generateMonth().getHM()
+	print(c)
 

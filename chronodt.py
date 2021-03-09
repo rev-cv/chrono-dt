@@ -1021,9 +1021,9 @@ class chrono(object):
 				d2.toTimeZone(self.timezone)
 
 			ue2 = d2.getUnixEpoch()
-			if ue1 > ue2:
+			if ue1 < ue2:
 				return pchrono(self, d2, False)
-			elif ue1 < ue2:
+			elif ue1 > ue2:
 				return pchrono(d2, self, False)
 			else: 
 				return pchrono(self, priority_day = True)
@@ -1064,7 +1064,7 @@ class chrono(object):
 		self1 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
 		self1.shift(day = 1 - wd)
 		self2 = chrono(self.year, self.month, self.day, 0, 0, 0, self.timezone)
-		self2.shift(day = 7 - wd + 1)
+		self2.shift(day = 7 - wd)
 		return pchrono(self1, self2, False)	
 
 	def __lt__(self, other):
@@ -1157,30 +1157,47 @@ class pchrono(object):
 			
 		elif start is not None and finish is not None and priority_day is True:
 			self.start = chrono(start).setTime(0, 0, 0)
-			self.finish = chrono(finish).setTime(0, 0, 0).toTimeZone(self.start.timezone).shift(day = 1)
+			self.finish = chrono(finish).setTime(0, 0, 0).shift(day = 1)
 
 		elif start is not None and finish is not None and priority_day is False:
 			self.start = chrono(start)
-			self.finish = chrono(finish).toTimeZone(self.start.timezone)
+			self.finish = chrono(finish)
 
 	def __str__(self):
 		temp = '%Y-%m0-%d0 %H0:%M0:%S0;'
 		return 'Object.PChrono(START {} FINISH {})'.format(self.start.format(temp), self.finish.format(temp))
 
-	def getDiff(self, arg = "sec"):
-		sec = self.finish.getUnixEpoch() - self.start.getUnixEpoch()
-		if arg == "sec":
-			return sec
-		elif arg == "min":
-			return sec / 60
-		elif arg == "hour":
-			return sec / 3600
-		elif arg == "day":
-			return sec / 86400
+	def getSecondsDiff(self):
+		return self.finish.getUnixEpoch() - self.start.getUnixEpoch()
+
+	def getFullDayDiff(self):
+		return self.getSecondsDiff() // 86400
+
+	def getDayDiff(self):
+		return self.getSecondsDiff() / 86400
+
+	def check_dates(self, date):
+		if date.isdatetime():
+			start = date
+			finish = date
+		if date.isdate(): 
+			#нужно найти период конкретного дня
+			start = hrono(date.year, date.month, date.day, 0, 0, 0)
+			finish = hrono(date.year, date.month, date.day, 23, 59, 59)
+		elif date.year is not None and date.month is not None:
+			#нужно найти период конкретного месяца
+			ly0 = 1 if date.check_leap_year(date.year) is True else 0
+			cd = {1:31,2:28+ly0,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
+			start = hrono(date.year, date.month, 1, 0, 0, 0)
+			finish = hrono(date.year, date.month, cd[date.month], 23, 59, 59)
+		elif date.year is not None:
+			start = hrono(date.year, 1, 1, 0, 0, 0)
+			finish = hrono(date.year, 12, 31, 23, 59, 59)
+		return start, finish
 
 	def getScale(self):
 		balance = {'y':0,'d':0,'h':0,'m':0,'s':0}
-		seconds = self.getDiff()
+		seconds = self.getSecondsDiff()
 		by = seconds // (86400 * 365)
 		bd = (seconds - (by * 86400 * 365)) // 86400
 		bh = (seconds - (bd * 86400)) // 3600
@@ -1194,22 +1211,22 @@ class pchrono(object):
 		return balance
 
 	def getPercentDay(self):
-		return round(self.getDiff() * 100 / 86400, 1)
+		return round(self.getSecondsDiff() * 100 / 86400, 1)
 
 	def getPercentWeek(self):
-		return round(self.getDiff() * 100 / (86400 * 7), 1)
+		return round(self.getSecondsDiff() * 100 / (86400 * 7), 1)
 
 	def getPercentYear(self):
-		return round(self.getDiff() * 100 / (86400 * 365), 1)
+		return round(self.getSecondsDiff() * 100 / (86400 * 365), 1)
 
 	def getPercentDecade(self):
-		return round(self.getDiff() * 100 / (86400 * 365 * 10 + 2), 1)
+		return round(self.getSecondsDiff() * 100 / (86400 * 365 * 10 + 2), 1)
 
 	def getPercentCentury(self):
-		return round(self.getDiff() * 100 / (86400 * 365 * 100 + 25), 1)
+		return round(self.getSecondsDiff() * 100 / (86400 * 365 * 100 + 25), 1)
 
 	def getHM(self):
-		second = self.getDiff()
+		second = self.getSecondsDiff()
 		h = second // 3600
 		m = (second - (h*3600)) // 60
 		return h, m
@@ -1227,10 +1244,9 @@ class pchrono(object):
 		pass
 
 
-
 if __name__ == '__main__':
 	import time
 
-	c = chrono().generateWeek()
+	c = chrono(2021, 2, 25, 0, 0, 1) > chrono(2021, 2, 25, 0, 0, 2)
 	print(c)
 

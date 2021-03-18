@@ -1043,7 +1043,7 @@ class chrono(object):
 			return pchrono(self1, self2, False)
 		elif dec == 3:
 			self1 = chrono(self.year, self.month, 21, 0, 0, 0, self.timezone)
-			self2 = chrono(self.year, self.month, self.getLastDayMonth(), 0, 0, 0, self.timezone, "+1d")
+			self2 = chrono(self.year, self.month, self.getLastDayMonth(), 0, 0, 0, self.timezone, shift = "+1d")
 			return pchrono(self1, self2, False)
 
 	def generateDay(self):
@@ -1176,25 +1176,6 @@ class pchrono(object):
 	def getDayDiff(self):
 		return self.getSecondsDiff() / 86400
 
-	def check_dates(self, date):
-		if date.isdatetime():
-			start = date
-			finish = date
-		if date.isdate(): 
-			#нужно найти период конкретного дня
-			start = hrono(date.year, date.month, date.day, 0, 0, 0)
-			finish = hrono(date.year, date.month, date.day, 23, 59, 59)
-		elif date.year is not None and date.month is not None:
-			#нужно найти период конкретного месяца
-			ly0 = 1 if date.check_leap_year(date.year) is True else 0
-			cd = {1:31,2:28+ly0,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
-			start = hrono(date.year, date.month, 1, 0, 0, 0)
-			finish = hrono(date.year, date.month, cd[date.month], 23, 59, 59)
-		elif date.year is not None:
-			start = hrono(date.year, 1, 1, 0, 0, 0)
-			finish = hrono(date.year, 12, 31, 23, 59, 59)
-		return start, finish
-
 	def getScale(self):
 		balance = {'y':0,'d':0,'h':0,'m':0,'s':0}
 		seconds = self.getSecondsDiff()
@@ -1243,10 +1224,120 @@ class pchrono(object):
 		#возвращает заполненный календарь типа GitHub
 		pass
 
+	def fragmentation(self, frag = "day", get_result = "datetime"):
+		#врагментирует период на указанные периоды
+		#фрагменетирует только на законченные фрагменты
+		result = list() 
+
+		if frag == "day":
+			s = chrono(self.start)
+			if self.start.hour > 0 or self.start.minute > 0 or self.start.second > 0:
+				s.shift(day=1)
+			f = chrono(self.finish).shift(day=-1)
+			while s <= f:
+				s1 = datetime(s.year, s.month, s.day, 0, 0, 0)
+				s.shift(day=1)
+				s2 = datetime(s.year, s.month, s.day, 0, 0, 0)
+				result.append([s1, s2])
+				#print(s1, s2)
+
+		elif frag == "week":
+			wd = self.start.getWeekday()
+			s = chrono(self.start)
+			f = chrono(self.finish)
+			if wd != 1: 
+				s.shift(day = 7 - wd + 1 )
+				f.shift(day = wd - 7 + wd)
+			f.shift(day = -7)
+			while s <= f:
+				s1 = datetime(s.year, s.month, s.day, 0, 0, 0)
+				s.shift(day=7)
+				s2 = datetime(s.year, s.month, s.day, 0, 0, 0)
+				result.append([s1, s2])
+
+		elif frag == "decade":
+			s = chrono(self.start)
+			f = chrono(self.finish)
+			if s.day != 1 and s.day <= 10:
+				s.day = 11
+			elif s.day != 11 and s.day > 11 and s.day <= 20:
+				s.day = 21
+			elif s.day != 21 and s.day > 21:
+				s.day = 1
+				s.shift(month=1)
+
+			f.shift(day=-10)
+			if f.day <= 10: f.day = 1
+			elif f.day <= 20: f.day = 11
+			elif f.day > 20: f.day = 21
+
+			while s <= f:
+				if s.day == 1:
+					s1 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					s.day = 11
+					s2 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					result.append([s1, s2])
+				elif s.day == 11:
+					s1 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					s.day = 21
+					s2 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					result.append([s1, s2])
+				elif s.day == 21:
+					s1 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					s.day = 1
+					s.shift(month=1)
+					s2 = datetime(s.year, s.month, s.day, 0, 0, 0)
+					result.append([s1, s2])
+
+		elif frag == "month":
+			s = chrono(self.start)
+			f = chrono(self.finish)
+
+			if s.day != 1:
+				s.day = 1
+				s.shift(month=1)
+			if f.day != 1:
+				f.day = 1
+			f.shift(month=-1)
+
+			while s <= f:
+				s1 = datetime(s.year, s.month, 1, 0, 0, 0)
+				s.day = 1
+				s.shift(month=1)
+				s2 = datetime(s.year, s.month, 1, 0, 0, 0)
+				result.append([s1, s2])
+
+		elif frag == "year":
+			s = chrono(self.start)
+			f = chrono(self.finish)
+			if s.month != 1 or s.day != 1:
+				s.shift(year=1)
+				s.month = 1
+				s.day = 1
+			if f.month != 1 or f.day != 1:
+				f.month = 1
+				f.day = 1
+			f.shift(year=-1)
+
+			while s <= f:
+				s1 = datetime(s.year, 1, 1, 0, 0, 0)
+				s.day = 1
+				s.shift(year=1)
+				s2 = datetime(s.year, 1, 1, 0, 0, 0)
+				result.append([s1, s2])
+		
+		if get_result == "pchrono":
+			return [(chrono(x[0]) - chrono(x[1])) for x in result]
+		else:
+			return result
+		
+
 
 if __name__ == '__main__':
 	import time
 
-	c = chrono(2021, 2, 25, 0, 0, 1) > chrono(2021, 2, 25, 0, 0, 2)
-	print(c)
-
+	c = chrono(2021, 1, 1, 0, 0, 0) - chrono(2021, 3, 1, 0, 0, 0)
+	#print(c)
+	f = c.fragmentation("week", "pchrono")
+	#f = c.fragmentation("week")
+	[print(x) for x in f]

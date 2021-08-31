@@ -323,6 +323,14 @@ class chrono(object):
 
 	def shiftTC(self, shift):
 		#+1y -1y 23mo -23mo 3d -3d +1h 25m 1w
+		#+2*2w = +4w, +55*5m = +275m
+		
+		def multiplication(string):
+			multipliers = string[0].split("*")
+			return str( int(multipliers[0]) * int(multipliers[1]) )
+
+		shift = sub(r'[0-9]+\*[0-9]+', multiplication, shift)
+
 		dict_for_shift = {'year':0, 'month':0, 'day':0, 'hour':0, 'minute':0, 'second':0, 'week':0}
 		shift = ' {} '.format(shift.lower())
 		y  = findall(r'([- +]\d+)y', shift)
@@ -1336,8 +1344,13 @@ class pchrono(object):
 if __name__ == '__main__':
 	import time
 
-	c = chrono(2021, 1, 1, 0, 0, 0) - chrono(2021, 3, 1, 0, 0, 0)
-	#print(c)
-	f = c.fragmentation("week", "pchrono")
+	# c = chrono(2021, 1, 1, 0, 0, 0) - chrono(2021, 3, 1, 0, 0, 0)
+	# #print(c)
+	# f = c.fragmentation("week", "pchrono")
 	#f = c.fragmentation("week")
-	[print(x) for x in f]
+
+	a = chrono(2021, 1, 1, 0, 0, 0)
+	# print(a)
+	a.shiftTC("+60*2m")
+
+	print(a)

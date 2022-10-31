@@ -5,66 +5,61 @@ from Chrono.ch_analyzer import chrono_analyzer
 from String.string_deconstruction import Deconstruction
 from String.string_construction import Formatter
 
-class chrono(
-		chrono_catcher,
-		chrono_analyzer,
-		chrono_pitcher,
-		chrono_transformator,
-		Deconstruction,
-		Formatter,
-	):
-	"""docstring for chrono"""
-	def __init__(self, 
-			y=None, 
-			m=None, 
-			d=None, 
-			H=None, 
-			M=None, 
-			S=None, 
-			shift=None,
-			tz="local", 
-			auto=True
-		):
+class chrono( chrono_catcher, chrono_analyzer, chrono_pitcher,
+        chrono_transformator, Deconstruction, Formatter ):
 
-		super(chrono, self).__init__()
+    def __init__(self, 
+            y = None, m = None, d = None, 
+            H = None, M = None, S = None, 
+            shift = None, tz = "local"):
 
-		self.chrono = chrono
-		self.y = None
-		self.m = None
-		self.d = None
-		self.H = None
-		self.M = None
-		self.S = None
-		self.tz = None
+        super(chrono, self).__init__()
 
-		self.setTimeZone(tz)
-		# в начале задается временная зода, 
-		# чтобы не перезаписать временную зону
-		# которая может прийти в аргументах
-		self.set(y, m, d, H, M, S)
+        self.chrono = chrono
+        self.y = None
+        self.m = None
+        self.d = None
+        self.H = None
+        self.M = None
+        self.S = None
+        self.tz = None
 
-	def __str__(self):
-		return self.format("CHRONO %YMD0 %HMS0 %Z")
+        self.setTimeZone(tz)
+        # в начале задается временная зода, 
+        # чтобы не перезаписать временную зону
+        # которая может прийти в аргументах
+        self.set(y, m, d, H, M, S)
+
+        if shift is not None:
+            if type(shift) is str:
+                # принимает строку с текстовыми командами для смещения
+                self.shiftTextCommand(shift)
+            elif type(shift) is dict:
+                # принимает словарь с текстовыми командами для смещения
+                self.shift(**shift)
+
+    def __str__(self):
+        s = 'Object.Chrono('
+        s += 'DATE %Y-%m0-%d0; ' if self.isDate() else 'DATE None '
+        s += 'TIME %H0:%M0:%S0; ' if self.isTime() else 'TIME None '
+        s += 'TZ %Z;)'
+        return self.format(s)
 
 if __name__ == '__main__':
-	# a = chrono("NOW")
-	# print(a)
-	# b = chrono(a)
-	# print(b)
-	
-	from PyQt5.QtCore import QDateTime
+    # a = chrono("NOW")
+    # print(a)
+    # b = chrono(a)
+    # print(b)
+    
+    # from PyQt5.QtCore import QDateTime
 
-	# time = QDateTime(2022, 11, 20, 11, 34, 34)
-	# tz = time.timeZone()
+    # time = QDateTime(2022, 11, 20, 11, 34, 34)
+    # tz = time.timeZone()
 
-	# for x in QTimeZone().availableTimeZoneIds():
-	# 	x = x.__str__()
-	# 	print(type(x), x[2:-1], len(x))
+    # for x in QTimeZone().availableTimeZoneIds():
+    # 	x = x.__str__()
+    # 	print(type(x), x[2:-1], len(x))
 
-	a = chrono()
-
-	print(a.getISO())
-
-
-
+    a = chrono("20221215", shift="-2y")
+    print(a)
 

@@ -2,37 +2,8 @@ import pytz
 from datetime import timedelta
 from re import findall, sub
 
-class chrono_transformator(object):
+class ChronoTransformator(object):
     """изменяет внутреннее состояние chrono"""
-    def __init__(self):
-        super(chrono_transformator, self).__init__()
-        self.RelativeIndication = {
-            # относительные указатели на дату
-            "now": self.setNow,
-            # ниже представлены указания не на даты, а на периоды
-            # "+1": self.setNow,
-            # "-1": self.setNow,
-            # "today": self.setToday, # вернет период сегодняшнего дня
-            # "tomorrow": partial(self.shift, **{"d": 1}),
-            # "yesterday": partial(self.shift, **{"d": -1}),
-            # "last day": partial(self.shift, **{"d": -1}),
-            # "next day": partial(self.shift, **{"d": 1}),
-
-            # "next week": partial(self.shift, **{"w": 1}),
-            # "last week": partial(self.shift, **{"w": -1}),
-            
-            # "next decade": partial(self.shift, **{"d": 10}),
-            # "last decade": partial(self.shift, **{"d": -10}),
-
-            # "next month": partial(self.shift, **{"m": 1}),
-            # "last month": partial(self.shift, **{"m": -1}),
-
-            # "next year": partial(self.shift, **{"y": 1}),
-            # "last year": partial(self.shift, **{"y": -1}),
-        }
-
-
-        # tomorrow, today, yesterday, a week ago, in a week, next week, last week
 
     def setTS(self, string):
         return self.setTimeShift(string)

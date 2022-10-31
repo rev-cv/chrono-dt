@@ -2,10 +2,8 @@ import pytz
 from tzlocal import get_localzone
 import datetime
 
-class chrono_pitcher(object):
+class ChronoPitcher(object):
     """выводит информацию из chrono"""
-    def __init__(self):
-        super(chrono_pitcher, self).__init__()
 
     def getAllTimeZone(self):
         return pytz.all_timezones

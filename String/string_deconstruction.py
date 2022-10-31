@@ -2,8 +2,6 @@ from re import findall
 
 class Deconstruction(object):
     """Класс посвящен методам преобразования строки в дату"""
-    def __init__(self):
-        super(Deconstruction, self).__init__()
 
     def deconstruction_date(self, string):
         # Модуль производит разбор строки в которую предположительно записана дата

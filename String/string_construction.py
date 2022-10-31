@@ -1,9 +1,9 @@
-from re import sub
+from re import sub, compile
 
-class Formatter(object):
+class FormatterCrono(object):
     """Класс посвящен методам преобразования даты в строку"""
     def __init__(self):
-        super(Formatter, self).__init__()
+        super(FormatterCrono, self).__init__()
 
         self.t_weekdays = {
             1: ['Понедельник', 'Пн', 'Пнд', 'Monday', 'Mo', 'Mon'],
@@ -124,6 +124,10 @@ class Formatter(object):
         regex = r'ss'	#секунды с нулем
         if regex in temp:
             temp = sub(regex, f'{self.S:0>2}', temp)
+        
+        regex = r'tz'	#временная зона
+        if regex in temp:
+            temp = sub(regex, f'{self.tz}', temp)
 
         return temp
 
@@ -261,7 +265,7 @@ class Formatter(object):
         if regex in temp:
             temp = sub(regex, str(self.S), temp)
 
-        regex = r'%Z'	#локальная зона
+        regex = r'%Z'	#временная зона
         if regex in temp:
             temp = sub(regex, f'{self.tz}', temp)
 
@@ -355,4 +359,38 @@ class Formatter(object):
             result += r[arabic]
 
         return result 
+
+class FormatterInterval(object):
+    """Класс посвящен методам преобразования интервала в строку"""
+    def __init__(self):
+        super(FormatterInterval, self).__init__()
+
+        self.re_start = compile(r'START{{.*?}}')
+        self.re_finish = compile(r'FINISH{{.*?}}')
+        self.re_chrono = compile(r'{{(.*?)}}')
+    
+    def template(self, temp = r"yyyy-MM-dd hh:mm:ss"):
+        """
+        Имеются шаблон для старта периода и шаблон для финиша
+        START{{yyyy-MM-dd hh:mm:ss}}
+        FINISH{{yyyy-MM-dd hh:mm:ss}}
+        """
+
+        def start_template(temp_chrono):
+            return self.s.template(
+                self.re_chrono.findall(temp_chrono[0])[0]
+            )
         
+        def finish_template(temp_chrono):
+            return self.f.template(
+                self.re_chrono.findall(temp_chrono[0])[0]
+            )
+
+        temp = self.re_start.sub(start_template, temp)
+        temp = self.re_finish.sub(finish_template, temp)
+
+        regex = r'tz'	#временная зона
+        if regex in temp:
+            temp = sub(regex, f'{self.tz}', temp)
+        
+        return temp

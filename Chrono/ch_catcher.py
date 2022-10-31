@@ -2,10 +2,8 @@ import sys
 from datetime import datetime
 import time
 
-class chrono_catcher(object):
+class ChronoCatcher(object):
     """задает дату в chrono"""
-    def __init__(self):
-        super(chrono_catcher, self).__init__()
 
     def set(self, 
             y = None, 
@@ -17,14 +15,7 @@ class chrono_catcher(object):
         ):
         type_y = type(y)
 
-        if y is False:
-            # no filling chrono
-            # chrono(False) — такая конструкция нужна
-            # чтобы миновать тяжеловесный метод .set()
-            # и перейти к специализированным функциям типа setUnixEpoch
-            pass
-
-        elif y is None:
+        if y is None:
             # datetime now
             self.setNow()
 

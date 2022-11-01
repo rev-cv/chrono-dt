@@ -115,21 +115,22 @@ class ChronoTransformator(object):
 
     def toTimeZone(self, TimeZone = 'UTC'):
         # переводит время из текущей временной зоны в переданную
-        preset_tz = pytz.timezone( str(self.tz) )
-        preset_dt = preset_tz.localize(
-            self.getDateTime()
-        )
+        if TimeZone != self.tz:
+            preset_tz = pytz.timezone( str(self.tz) )
+            preset_dt = preset_tz.localize(
+                self.getDateTime()
+            )
 
-        new_tz = pytz.timezone(str(TimeZone))
-        new_datetime = preset_dt.astimezone(new_tz)
+            new_tz = pytz.timezone(str(TimeZone))
+            new_datetime = preset_dt.astimezone(new_tz)
 
-        self.y = new_datetime.year
-        self.m = new_datetime.month
-        self.d = new_datetime.day
-        self.H = new_datetime.hour
-        self.M = new_datetime.minute
-        self.S = new_datetime.second
-        self.tz = str(TimeZone)
+            self.y = new_datetime.year
+            self.m = new_datetime.month
+            self.d = new_datetime.day
+            self.H = new_datetime.hour
+            self.M = new_datetime.minute
+            self.S = new_datetime.second
+            self.tz = str(TimeZone)
 
         return self
 

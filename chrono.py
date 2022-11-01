@@ -4,13 +4,15 @@ from Chrono.ch_pitcher import ChronoPitcher
 from Chrono.ch_analyzer import ChronoAnalyzer
 from Chrono.ch_operators import ChronoOperators
 from String.string_deconstruction import Deconstruction
-from String.string_construction import FormatterCrono, FormatterInterval
+from String.string_construction import ChronoFormatter, IntervalFormatter
 
 from Interval.in_catcher import IntervalCatcher
 from Interval.in_analyzer import IntervalAnalyzer
+from Interval.in_pitcher import IntervalPitcher
+from Interval.in_transformator import IntervalTransformator
 
 class Chrono( ChronoCatcher, ChronoAnalyzer, ChronoPitcher, ChronoOperators,
-        ChronoTransformator, Deconstruction, FormatterCrono ):
+        ChronoTransformator, Deconstruction, ChronoFormatter ):
 
     def __init__(self, 
             y = None, m = None, d = None, 
@@ -51,8 +53,8 @@ class Chrono( ChronoCatcher, ChronoAnalyzer, ChronoPitcher, ChronoOperators,
 
 
 
-class Interval(IntervalCatcher, FormatterInterval, IntervalAnalyzer):
-    def __init__(self, s = None, f = None, roundOff = None, expand=True, tz=None, about=None):
+class Interval(IntervalCatcher, IntervalAnalyzer, IntervalPitcher, IntervalTransformator, IntervalFormatter):
+    def __init__(self, s = None, f = None, roundOff = None, expand=True, about=None):
         super(Interval, self).__init__()
 
         # roundOff — округляет интервал путем расширения, если expand=True
@@ -60,6 +62,7 @@ class Interval(IntervalCatcher, FormatterInterval, IntervalAnalyzer):
 
         # ПРИМЕР start = <2022-10-25 12:45>, finish = <2022-11-26 4:35>
 
+        # roundOff = None — добавляет интервалы никак не преобразовывая входящие Chrono
         # "hour" — округляет период до часа
                 # expand=True  → <2022-10-25 12:00:00 — 2022-11-26 05:00:00>
                 # expand=False → <2022-10-25 13:00:00 — 2022-11-26 04:00:00>
@@ -71,13 +74,11 @@ class Interval(IntervalCatcher, FormatterInterval, IntervalAnalyzer):
                 
                 # Если в interval() передано только start или только finish, а roundOff == None
                 # то применяются roundOff="day"
-
         # 'month' — округляет период до месяца
                 # expand=True  → <2022-10-01 00:00:00 — 2022-11-30 00:00:00>
                 # expand=False → <2022-11-01 00:00:00 — 2022-11-01 00:00:00>
                 # ↑ В данном случае должна быть ошибка "Использование `expand=False` 
                 # привело к схлопыванию интервала"
-
         # "year" — округляет интервал до года
                 # expand=True  → <2022-01-01 00:00:00 — 2023-01-01 00:00:00>
                 # expand=False → <2023-11-01 00:00:00 — 2022-11-01 00:00:00>
@@ -88,9 +89,11 @@ class Interval(IntervalCatcher, FormatterInterval, IntervalAnalyzer):
         # "decennary" - десятелетие
 
         self.chrono = Chrono
+        self.interval = Interval
+        self.intervals = Intervals
         self.s = None # start начало временного интервала
         self.f = None # finish конец временного интервала
-        self.tz = tz
+        self.tz = None
         self.about = about
         # ↑ Любая информация, которую можно присвоить интервалу
         # эта информация будет просто таскаться за интервалом
@@ -112,24 +115,61 @@ class Interval(IntervalCatcher, FormatterInterval, IntervalAnalyzer):
         s += '    START START{{yyyy-MM-dd hh:mm:ss}}\n'
         s += '    FINISH FINISH{{yyyy-MM-dd hh:mm:ss}}\n'
         s += '    TZ tz\n'
+        s += f'    FRAG {len(self.fragments)}\n'
         s += ')'
         return self.template(s)
 
-    
+
 class Intervals(object):
     """Обрабатывает список интервалов"""
-    def __init__(self, intervals_list = None):
+    def __init__(self, *intervals):
         super(Intervals, self).__init__()
+        self.intervals = list(intervals)
 
-    def getMissedIntervals(self):
-        # создает список с интервалами, которые могут уместиться между текущими интевалами
-        return []
+    def skip(self):
+        # создаст список пропущенных интервалов, которые могут быть вписаны между
+        joined = self.join()
+        result = list()
+        if len(joined) > 0:
+            
+            current = joined[0]
+
+            for x in joined[1:]:
+                if current.f.getUnixEpoch() < x.s.getUnixEpoch():
+                    result.append(
+                        Interval(
+                            current.f, x.s
+                        )
+                    )
+                    current = x
+        
+        return result
+
     
-    def getStackedIntervals(self):
-        # выбрать наслаивающиеся друг на дружку интервалы
-        pass
+    def join(self):
+        # интервалы между которыми не существует пропусков объединяются в один интервал
+        # выдается список объедененныъх интервалов
+        
+        toUnite = sorted(self.intervals, key = lambda ch: ch.s.getUnixEpoch())
+        result = list()
+
+        if len(toUnite) > 0:
+
+            current = toUnite[0]
+
+            for x in toUnite[1:]:
+                r = current.join(x)
+                if r is not False:
+                    current = r
+                else:
+                    result.append(current)
+                    current = x
+            result.append(current)
+            
+        return result
+
     
-    def getCalendar(self, year):
+    def сalendar(self, year):
         # получить матрицу интервалов содержащих указанный год
         # year.fragments(
         #   months.fragments(
@@ -139,10 +179,23 @@ class Intervals(object):
         #   )
         # )
         pass
+
+    def occupancy(self, measure='second'):
+        # заполненность периодами
+        # от sum отличается тем, что не учитываются наслаивание периодов
+        sumfrags = 0.0
+        for x in self.join():
+            sumfrags += x.getDuration(measure)
+        return sumfrags
     
-    def getFragmentation(self, interval, frag = "days"):
-        # раздробить данный интервал на дни / часы / прочее
-        pass
+    def sum(self, measure='second'):
+        # общая сумма всех интервалов содержащихся в self
+        sumfrags = 0.0
+        for x in self.intervals:
+            sumfrags += x.getDuration(measure)
+        return sumfrags
+    
+    
         
 
 if __name__ == '__main__':
@@ -163,8 +216,45 @@ if __name__ == '__main__':
     # a = chrono("20221215", shift="-2y")
     # print(a)
     
-    i = Interval(
-        Chrono(2022, 5, 12),
-        Chrono(2022, 12, 12)
+    i1 = Interval(
+        Chrono(2021, 5, 12),
+        Chrono(2022, 6, 20)
     )
-    print(i)
+
+    i2 = Interval(
+        Chrono(2022, 12, 12),
+        Chrono(2022, 12, 25)
+    )
+
+    i3 = Interval(
+        Chrono(2022, 1, 7),
+        Chrono(2022, 12, 25)
+    )
+
+    i4 = Interval(
+        Chrono(2004, 3, 2),
+        Chrono(2006, 6, 12)
+    )
+
+    i5 = Interval(
+        Chrono(2022, 3, 14),
+        Chrono(2026, 8, 28)
+    )
+
+    # i = Intervals(i1, i4, i2, i3)
+
+
+    # for x in i.skip():
+    #     print(x)
+
+    a = Interval("2022", roundOff="year")
+    # print(a.getOccupancyFragments("day"), a.getOccupancy())
+
+    # for x in a.fragments:
+    #     print(x)
+    # print(a)
+    a.fragmentation("month")
+
+    for i in range(len(a.fragments)):
+        # print(a.fragments[i].template(" START{{yyyy, MMMM}} (" + str(i+1) + " decade)"))
+        print(a.fragments[i])

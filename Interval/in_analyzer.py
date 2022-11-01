@@ -26,10 +26,22 @@ class IntervalAnalyzer(object):
     
     def isChronoInto(self, chrono):
         # входит ли переданная дата в данный период?
-        pass
+        if chrono.isTime() is False:
+            chrono.setTupleTime(0,0,0)
+        if self.s < chrono < self.f:
+            return True
+        return False
 
     def isIntervalInto(self, interval,  onlyFullEntry=False):
         # входит ли переданный интервал в текущий интервал?
         # onlyFullEntry=False — переданный период не может выходить за границы текущего
         # onlyFullEntry=True — достаточно чтобы хотя бы часть периода лежала на текущем периоде
-        pass
+        if onlyFullEntry is False:
+            if self.s < interval.s < interval.f < self.f:
+                return True
+            return False
+        elif onlyFullEntry is True:
+            if self.s < interval.s < self.f or self.s < interval.f < self.f:
+                return True
+            return False
+        return False

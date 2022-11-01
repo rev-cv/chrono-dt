@@ -101,11 +101,14 @@ class ChronoAnalyzer(object):
         pass
 
     def isDayBegun(self):
-        # начался ли день? до тех пор пока время не больше 00:00:00 день не начался
+        # начался ли день?
+        # пока время равно 00:00:00 день считается не начавшимся
         # эта проверка необходима для периодов чтобы период типа
         # 2022-03-12 00:00:00 — 2022-03-13 00:00:00 принедлежал только для дня 
         # 2022-03-12, но не для дня 2022-03-13
-        pass
+        if self.H == 0 and self.M == 0 and self.S == 0:
+            return False
+        return True
 
     def isUTC(self):
         return True if self.tz == "UTC" else False
@@ -116,30 +119,3 @@ class ChronoAnalyzer(object):
     def isTimeZone(self, TimeZone):
         # проверка временной зоны на возможность использования
         return True if TimeZone in self.getAllTimeZone() else False
-
-
-
-# Возможные варианты
-# chrono(2021, 1, 1, 2, 35, 45, 1425, tz = "UTC", isUTC=True, shift="", auto=True)
-
-# chrono(False) - создает незаполненный объект chrono. Самый быстрый способ создать chrono
-# chrono( chrono() )
-
-# chrono(QDateTime)
-# chrono(QDate, QTime)
-
-# chrono(datetime.datetime)
-# chrono(datetime.date, datetime.time)
-
-# chrono("2021-02-15")
-# chrono("2021-02-15", "15:45")
-# chrono("2021-02-15", "3:45PM")
-# chrono("2021, 15 November", r"%Y, %d %mE")
-
-
-# chrono()
-# ns = time.time_ns()
-# ms = (ns * 1e-6) - round(ns * 1e-9) / 1000
-# s = 0
-
-

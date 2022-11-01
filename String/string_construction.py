@@ -1,9 +1,9 @@
 from re import sub, compile
 
-class FormatterCrono(object):
+class ChronoFormatter(object):
     """Класс посвящен методам преобразования даты в строку"""
     def __init__(self):
-        super(FormatterCrono, self).__init__()
+        super(ChronoFormatter, self).__init__()
 
         self.t_weekdays = {
             1: ['Понедельник', 'Пн', 'Пнд', 'Monday', 'Mo', 'Mon'],
@@ -360,10 +360,10 @@ class FormatterCrono(object):
 
         return result 
 
-class FormatterInterval(object):
+class IntervalFormatter(object):
     """Класс посвящен методам преобразования интервала в строку"""
     def __init__(self):
-        super(FormatterInterval, self).__init__()
+        super(IntervalFormatter, self).__init__()
 
         self.re_start = compile(r'START{{.*?}}')
         self.re_finish = compile(r'FINISH{{.*?}}')

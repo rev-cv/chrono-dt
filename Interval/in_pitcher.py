@@ -1,3 +1,6 @@
+from ast import Return
+
+
 class IntervalPitcher(object):
 
     def getСompleted(self, chrono):
@@ -41,33 +44,12 @@ class IntervalPitcher(object):
             bs = (diff - (bd * 86400 + bh * 3600)) % 60
 
             return { 'y': by, 'd': bd, 'h': bh, 'm': bm, 's': bs }
-
-         
-
     
-
-    
-         
-
-
+    # def getCountLeapYears(self):
+    #     # возвращает количество высокосных лет в данном периоде
+    #     return self.getDuration('divided').get('d')
         
 
+         
 
-
-"""
-getСomplete(chrono)
-
-
-getScale("day")
-# получить размер периода в днях / часах / секундах и прочее
-# получен будет словарь с разбивкой {years: 1, months: 6, days: 2}
-
-getDiff()
-получить разницу между start и finish в секундах, минутах, дня и прочее
-
-getSplitInterval("day")
-# раздробить данный интервал на дни / часы / прочее
-# раздробленные интервалы будут записаны в self.fragments
-
-
-"""
+    

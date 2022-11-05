@@ -36,7 +36,7 @@ class ChronoPitcher(object):
 
     def getDayYear(self):
         # получение количество деней с начала года текущей даты
-        days = 1 if self.isLeapYear(self.y) and self.m > 2 else 0
+        days = 1 if self.isLeapYear() and self.m > 2 else 0
         days += self.d
         for i in range(1, self.m):
             days += self._countDays[i]
@@ -84,17 +84,11 @@ class ChronoPitcher(object):
 
     def getWeekday(self):
         # получить день недели для текущей даты
-        day = self.d
-        month = self.m
-        year = self.y
-
         if self.isDate() is True:
-            if month < 3:
-                year -= 1
-                month += 10
-            else:
-                month -= 2
-            return (day + 31 * month // 12 + year + year // 4 - year // 100 + year // 400) % 7
+            month = self.m + 10 if self.m < 3 else self.m - 2
+            year = self.y - 1 if self.m < 3 else self.y
+            result = (self.d + 31 * month // 12 + year + year // 4 - year // 100 + year // 400) % 7
+            return 7 if result == 0 else result
         raise Exception("<chrono.getWeekday()>:  date not created!")
 
     def getWeekYear(self): 
@@ -108,21 +102,12 @@ class ChronoPitcher(object):
         return week_number
     
     def getLastDayMonth(self):
-        count_days = {
-            1:31,
-            2:29 if self.isLeapYear(self.y) else 28,
-            3:31,
-            4:30,
-            5:31,
-            6:30,
-            7:31,
-            8:31,
-            9:30,
-            10:31,
-            11:30,
-            12:31
-        }
-        return count_days[self.m]
+        if self.m in [1, 3, 5, 7, 8, 10, 12]:
+            return 31
+        elif self.m in [4, 6, 9, 11]:
+            return 30
+        elif self.m == 2:
+            return 29 if self.isLeapYear() else 28
 
     def getCentury(self):
         # возвращает век арабскими цифрами

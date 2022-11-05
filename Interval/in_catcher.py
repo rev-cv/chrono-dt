@@ -111,16 +111,18 @@ class IntervalCatcher(object):
             elif ch.m <= 9:
                 ch.m = 10
             else:
-                ch.m = 1
-                ch.shift(year=1)
+                ch.y, ch.m = ch.y+1, 1
         elif 'decennary' == ro:
             ch.H, ch.M, ch.S = 0, 0, 0,
             ch.d, ch.m = 1, 1
             ch.y = int(str(ch.y)[:-1] + "0") + 10
         elif "minute" == ro:
-            ch.M, ch.S = 0, 0
+            ch.S = 0
             ch.shift(minute=1)
-        
+        elif 'week' == ro:
+            # смещение до следующего понедельника
+            ch.H, ch.M, ch.S = 0, 0, 0
+            ch.shift(day = 8 - ch.getWeekday())
         return ch
 
     def _decrease(self, ch, ro):
@@ -144,26 +146,28 @@ class IntervalCatcher(object):
                 ch.d = 21
         elif 'quarter' == ro:
             ch.H, ch.M, ch.S, ch.d = 0, 0, 0, 1
-            if ch.m <= 3:
+            if ch.m < 4:
                 ch.m = 1
-            elif ch.m <= 6:
-                ch.m = 3
-            elif ch.m <= 9:
-                ch.m = 6
+            elif ch.m < 7:
+                ch.m = 4
+            elif ch.m < 10:
+                ch.m = 7
             else:
-                ch.m = 9
+                ch.m = 10
         elif 'decennary' == ro:
             ch.H, ch.M, ch.S = 0, 0, 0,
             ch.d, ch.m = 1, 1
             ch.y = int(str(ch.y)[:-1] + "0")
         elif "minute" == ro:
-            ch.M, ch.S = 0, 0
-        
+            ch.S = 0
+        elif 'week' == ro:
+            # смещение до прошлого понедельника
+            ch.H, ch.M, ch.S = 0, 0, 0
+            ch.shift(day = ch.getWeekday() * (-1) + 1)
         return ch
 
-
     def setRoundOff(self, roundOff):
-        if roundOff in ['hour', 'day', 'month', 'year', 'decade', 'quarter', 'decennary', 'minute', None]:
+        if roundOff in ['hour', 'day', 'month', 'year', 'decade', 'quarter', 'decennary', 'minute', None, 'week']:
             return roundOff
         raise Exception("Invalid argument passed for 'roundOff'")
 

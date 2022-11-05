@@ -45,7 +45,7 @@ class Chrono( ChronoCatcher, ChronoAnalyzer, ChronoPitcher, ChronoOperators,
                 self.shift(**shift)
 
     def __str__(self):
-        s = 'Object.Chrono('
+        s = 'CHRONO('
         s += 'DATE yyyy-MM-dd ' if self.isDate() else 'DATE None '
         s += 'TIME hh:mm:ss ' if self.isTime() else 'TIME None '
         s += 'TZ tz)'
@@ -111,12 +111,11 @@ class Interval(IntervalCatcher, IntervalAnalyzer, IntervalPitcher, IntervalTrans
         
 
     def __str__(self):
-        s = 'Object.Interval(\n'
+        s = 'INTERVAL\n'
         s += '    START START{{yyyy-MM-dd hh:mm:ss}}\n'
         s += '    FINISH FINISH{{yyyy-MM-dd hh:mm:ss}}\n'
         s += '    TZ tz\n'
         s += f'    FRAG {len(self.fragments)}\n'
-        s += ')'
         return self.template(s)
 
 
@@ -237,8 +236,8 @@ if __name__ == '__main__':
     )
 
     i5 = Interval(
-        Chrono(2022, 3, 14),
-        Chrono(2026, 8, 28)
+        Chrono(2005, 11, 14),
+        Chrono(2022, 12, 28)
     )
 
     # i = Intervals(i1, i4, i2, i3)
@@ -247,14 +246,19 @@ if __name__ == '__main__':
     # for x in i.skip():
     #     print(x)
 
-    a = Interval("2022", roundOff="year")
+    a = Interval((2022,1,5, 15, 12, 0), roundOff="hour")
     # print(a.getOccupancyFragments("day"), a.getOccupancy())
 
     # for x in a.fragments:
     #     print(x)
     # print(a)
-    a.fragmentation("month")
+    a.fragmentation("minute")
+    print(a)
+    print("-" * 25)
 
     for i in range(len(a.fragments)):
         # print(a.fragments[i].template(" START{{yyyy, MMMM}} (" + str(i+1) + " decade)"))
         print(a.fragments[i])
+
+
+

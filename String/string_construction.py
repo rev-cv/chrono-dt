@@ -12,7 +12,7 @@ class ChronoFormatter(object):
             4: ['Четверг', 'Чт', 'Чтв', 'Thursday', 'Th', 'Thu'],
             5: ['Пятница', 'Пт', 'Птн', 'Friday', 'Fr', 'Fri'],
             6: ['Суббота', 'Сб', 'Суб', 'Saturday', 'Sa', 'Sat'],
-            0: ['Воскресенье', 'Вс', 'Вск', 'Sunday', 'Su', 'Sun'],
+            7: ['Воскресенье', 'Вс', 'Вск', 'Sunday', 'Su', 'Sun'],
         }
 
         self.t_month_rus = ['', 

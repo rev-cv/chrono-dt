@@ -1,4 +1,3 @@
-import asyncio
 
 class IntervalTransformator(object):
     def __init__(self):
@@ -12,31 +11,30 @@ class IntervalTransformator(object):
             
         if "day" == frag:
             c = self.chrono(False).setChrono(self.s)
-            if c.isDayBegun() is False:
+            if c.isDayBegun():
                 c.setTupleTime(0,0,0).shift(day=1)
             current = c.getUnixEpoch()
 
             f = self.chrono(False).setChrono(self.f).setTupleTime(0,0,0)
             finish = f.getUnixEpoch()
             
-            chronoes = [current, ]
-
             while proceed:
-                current += 86400
-                if current <= finish:
-                    chronoes.append(current)
+                if current < finish:
+                    self.fragments.append(current)
                 else:
                     proceed = False
+                current += 86400
                 
         elif 'decade' == frag:
             c = self.chrono(False).setTupleTime(0,0,0)
             current_dec = 0
             if self.s.isDayBegun() is False and self.s.d == 1:
+                # день не началася и является первым числом месяца
                 c.setTupleDate(self.s.y, self.s.m, 1)
-            elif self.s.d <= 10:
+            elif self.s.d < 11:
                 c.setTupleDate(self.s.y, self.s.m, 11)
                 current_dec = 1
-            elif self.s.d <= 20:
+            elif self.s.d < 21:
                 c.setTupleDate(self.s.y, self.s.m, 21)
                 current_dec = 2
             else:
@@ -48,6 +46,7 @@ class IntervalTransformator(object):
             current = c.getUnixEpoch()
             current_year = c.y
             current_month = c.m
+            print(c)
 
             f = self.chrono(False).setTupleTime(0,0,0)
             if self.f.d <= 10:
@@ -78,7 +77,7 @@ class IntervalTransformator(object):
                 12: [i10, i10, i31],
             }
 
-            chronoes = [current, ]
+            self.fragments.append(current)
 
             while proceed:
                 while proceed and current_dec < 3:
@@ -86,7 +85,7 @@ class IntervalTransformator(object):
                     current += increments[current_month][current_dec]
 
                     if current < finish:
-                        chronoes.append(current)
+                        self.fragments.append(current)
                         current_dec += 1
                     else:
                         proceed = False
@@ -102,7 +101,7 @@ class IntervalTransformator(object):
 
         elif 'month' == frag:
             c = self.chrono(False).setTupleDate(self.s.y, self.s.m, 1).setTupleTime(0,0,0)
-            if c.isDayBegun() is False and self.s.d > 1:
+            if c.isDayBegun() or self.s.d > 1:
                 c.shift(month=1)
             current = c.getUnixEpoch()
             current_year = c.y
@@ -132,14 +131,12 @@ class IntervalTransformator(object):
                 11: i30,
                 12: i31,
             }
-
-            chronoes = [current, ]
             
             while proceed:
                 current += increments[current_month]
 
                 if current <= finish:
-                    chronoes.append(current)
+                    self.fragments.append(current)
                 else:
                     proceed = False
 
@@ -150,48 +147,182 @@ class IntervalTransformator(object):
                 else:
                     current_month += 1
 
+        elif 'week' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            if c.isDayBegun():
+                c.setTupleTime(0,0,0).shift(day=1)
+            wdc = c.getWeekday()
+            if wdc != 1:
+                c.shift(day = 8 - wdc)
+            current = c.getUnixEpoch()
+            
+            f = self.chrono(False).setChrono(self.f)
+            if f.isDayBegun():
+                f.setTupleTime(0,0,0)
+            wdf = f.getWeekday()
+            if wdf != 1:
+                f.shift(day = wdf * (-1) + 1)
+            finish = f.getUnixEpoch()
 
+            self.fragments.append(current)
 
+            while proceed:
+                current += 604800 #86400 * 7
+                if current < finish:
+                    self.fragments.append(current)
+                else:
+                    proceed = False
 
-        for x in chronoes:
-            self.fragments.append(
-                self.interval(
+        elif 'quarter' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            current_quarter = 1
+            if c.m == 1 and c.d == 1 and c.isDayBegun() is False:
+                # если 1 января и еще не начался день, то первый квартал
+                c.m, c.d, c.H, c.M, c.S = 1, 1, 0, 0, 0
+            if c.m <= 3:
+                c.m, c.d, c.H, c.M, c.S = 4, 1, 0, 0, 0
+                current_quarter = 2
+            elif c.m <= 6:
+                c.m, c.d, c.H, c.M, c.S = 7, 1, 0, 0, 0
+                current_quarter = 3
+            elif c.m <= 9:
+                c.m, c.d, c.H, c.M, c.S = 10, 1, 0, 0, 0
+                current_quarter = 4
+            else:
+                c.y, c.m, c.d, c.H, c.M, c.S = c.y+1, 1, 1, 0, 0, 0
+            current = c.getUnixEpoch()
+            current_year = c.y
+
+            f = self.chrono(False).setChrono(self.f)
+            if f.m <= 3:
+                f.m, f.d, f.H, f.M, f.S = 1, 1, 0, 0, 0
+            elif f.m <= 6:
+                f.m, f.d, f.H, f.M, f.S = 3, 1, 0, 0, 0
+            elif f.m <= 9:
+                f.m, f.d, f.H, f.M, f.S = 6, 1, 0, 0, 0
+            elif f.m <= 12:
+                f.m, f.d, f.H, f.M, f.S = 9, 1, 0, 0, 0
+            finish = f.getUnixEpoch()
+
+            fe = 29 if c.isLeapYear(current_year) else 28
+            increments = {
+                1: (31 + fe + 31) * 86400,
+                2: (30 + 31 + 30) * 86400,
+                3: (31 + 31 + 30) * 86400,
+                4: (31 + 30 + 31) * 86400,
+            }
+
+            self.fragments.append(current)
+
+            while proceed:
+                while proceed and current_quarter <= 4:
+                    current += increments[current_quarter]
+
+                    if current < finish:
+                        self.fragments.append(current)
+                    else:
+                        proceed = False
+                    
+                    current_quarter += 1
+                
+                current_year += 1
+                current_quarter = 1
+                fe = 29 if c.isLeapYear(current_year) else 28
+                increments[1] = (31 + fe + 31) * 86400
+
+        elif 'year' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            current_year = c.y
+            if c.m == 1 and c.d == 1 and c.isDayBegun() is False:
+                c.m, c.d, c.H, c.M, c.S = 1, 1, 0, 0, 0
+            else:
+                c.y, c.m, c.d, c.H, c.M, c.S = c.y+1, 1, 1, 0, 0, 0
+            current = c.getUnixEpoch()
+
+            f = self.chrono(False).setChrono(self.f)
+            f.m, f.d, f.H, f.M, f.S = 1, 1, 0, 0, 0
+            finish = f.getUnixEpoch()
+
+            while proceed:
+                if current < finish:
+                    self.fragments.append(current)
+                else:
+                    proceed = False
+                    
+                current_year += 1
+                # ↓ 366/365 * 86400
+                current += 31622400 if c.isLeapYear(current_year) else 31536000
+
+        elif 'decennary' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            if c.m == 1 and c.d == 1 or c.isDayBegun() is False:
+                dy = c.y // 10 * 10
+                c.y = dy if c.y == dy else dy + 10
+            else:
+                c.y, c.m, c.d, c.H, c.M, c.S = (c.y // 10 + 1) * 10, 1, 1, 0, 0, 0
+
+            f = self.chrono(False).setChrono(self.f)
+            f.y, f.m, f.d, f.H, f.M, f.S = f.y // 10 * 10, 1, 1, 0, 0, 0
+            
+            while proceed:
+                if c < f:
+                    self.fragments.append(c.getUnixEpoch())
+                else:
+                    proceed = False
+                
+                c.y += 10
+
+        elif 'hour' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            if c.isDayBegun() is False:
+                c.shift(hour = 1)
+                c.H, c.M, c.S = 0, 0, 0
+            current = c.getUnixEpoch()
+
+            f = self.chrono(False).setChrono(self.f)
+            if f.isDayBegun() is False:
+                f.H, f.M, f.S = 0, 0, 0
+            finish = f.getUnixEpoch()
+
+            while proceed:
+                if current < finish:
+                    self.fragments.append(current)
+                else:
+                    proceed = False
+                current += 3600
+
+        elif 'minute' == frag:
+            c = self.chrono(False).setChrono(self.s)
+            if c.M > 0 or c.S > 0:
+                c.shift(minute = 1)
+                c.M, c.S = 0, 0
+            current = c.getUnixEpoch()
+
+            f = self.chrono(False).setChrono(self.f)
+            if f.isDayBegun() is False:
+                f.M, f.S = 0, 0
+            finish = f.getUnixEpoch()
+
+            while proceed:
+                if current < finish:
+                    self.fragments.append(current)
+                else:
+                    proceed = False
+                current += 60
+
+        self.fragments = [
+
+            self.interval(
                     self.chrono(False).setUnixEpoch(x).toTimeZone(self.tz),
                     roundOff=frag
                 )
-            )
 
+            for x in self.fragments
 
+        ]
 
+        return self
 
-            
-
-
-
-
-
-
-
-
-        # async def aisle():
-
-
-        # async def random_sleep(i: int):
-        #     delay = random.randint(1, 5)
-        #     print(f"{i}: start sleep")
-        #     await asyncio.sleep(delay)
-        #     print(f"{i}: end sleep")
-            
-        # async def main():
-        #     await asyncio.gather(
-        #         random_sleep(1),
-        #         random_sleep(2),
-        #         random_sleep(3),
-        #         random_sleep(4),
-        #         random_sleep(5),
-        #     )
-            
-        # asyncio.run(main())
 
     def join(self, interval, greedy = False):
         # объединить два интервала

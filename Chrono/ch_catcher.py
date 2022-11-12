@@ -195,13 +195,21 @@ class ChronoCatcher(object):
         self.setTupleTime(*t)
         return self
 
-    def setByReGex(self, string, regex):
+    def setByReGex(self, regex, string):
         # вставка по regex выражению
-        pass
+        result = self.deconstruction_datetime_by_regex(regex, string)
+        if type(result) is list:
+            self.setTupleDate(*result[0])
+            self.setTupleTime(*result[1])
+        return self
 
-    def setByTemplate(self, string, template):
-        # вставка по шаблону типа yyyy-MM-dd hh:mm:ss tz
-        pass
+    def setByTemplate(self, template, string):
+        # вставка по шаблону типа yyyy-MM-dd hh:mm:ss
+        result = self.deconstruction_datetime_by_template(template, string)
+        if type(result) is list:
+            self.setTupleDate(*result[0])
+            self.setTupleTime(*result[1])
+        return self
 
     def setChrono(self, ch):
         self.y = ch.y

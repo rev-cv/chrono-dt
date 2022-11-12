@@ -17,7 +17,7 @@ class ChronoAnalyzer(object):
             else:
                 raise Exception("<chrono._isDate()>: the month is indicated by numbers from 1 to 12")
 
-        return self._isCountDaysInMonth(y, m, d, isGenerateError=True)
+        return self._isCountDaysInMonth(y, m, d, isGenerateError)
 
     def _isTime(self, H, M, S, isGenerateError=False):
         # является переданные значения временем?

@@ -1,7 +1,95 @@
-from re import findall
+from re import findall, match
 
 class Deconstruction(object):
     """Класс посвящен методам преобразования строки в дату"""
+    def __init__(self):
+        super(Deconstruction, self).__init__()
+        self.monthNames = {
+            'jan': 1, 'january':  1, 'янв': 1, 'январь': 1, 'января': 1,
+            'feb': 2, 'february': 2, 'фев': 2, 'февраль': 2, 'февраля': 2,
+            'mar': 3, 'march': 3, 'мар': 3, 'март': 3, 'марта': 3, 
+            'apr': 4, 'april': 4, 'апр': 3, 'апрель': 4, 'апреля': 4,
+            'may': 5, 'may': 5, 'май': 5, 'мая': 5,
+            'jun': 6, 'june': 6, 'июн': 6, 'июнь': 6, 'июня': 6,
+            'jul': 7, 'july': 7, 'июл': 7, 'июль': 7, 'июля': 7,
+            'aug': 8, 'august': 8, 'авг': 8, 'август': 8, 'августа': 8,
+            'sep': 9, 'september': 9, 'сен': 9, 'сентябрь': 9, 'сентября': 9,
+            'oct': 10, 'october': 10, 'окт': 10, 'октябрь': 10, 'октября': 10,
+            'nov': 11, 'november': 11, 'нов': 11, 'ноябрь': 11, 'ноября': 11,
+            'dec': 12, 'december': 12, 'дек': 12, 'декабрь': 12, 'декабря': 12,
+        }
+
+    def deconstruction_datetime_by_regex(self, regex, string):
+        # в шаблоне должны быть именованные группы
+        # примеры смотреть в deconstruction_datetime_by_template
+        # year
+        # month
+        # day
+        # hour
+        # minute
+        # second
+        # month_text - любое текстовое обозначение месяца предусмотренное в self.monthNames
+
+        year = None
+        month = None
+        day = None
+        hour = 0
+        minute = 0
+        second = 0
+
+        r = match(regex, string)
+        if r is not None:
+            recd = r.groupdict()
+            received_keys = recd.keys()
+
+            if "year" in received_keys:
+                year = int(recd['year'])
+            
+            if "month" in received_keys:
+                month = int(recd['month'])
+            elif "month_text" in received_keys:
+                month = self.monthNames.get(recd['month_text'].lower())
+
+            if "day" in received_keys:
+                day = int(recd['day'])
+
+            if self._isDate(year, month, day) is False:
+                return None
+
+            hour = int(recd.get('hour', 0))
+            minute = int(recd.get('minute', 0))
+            second = int(recd.get('second', 0))
+
+            if self._isTime(hour, minute, second) is False:
+                return None
+
+            return [
+                [year, month, day],
+                [hour, minute, second]
+            ]
+
+        return None
+
+    def deconstruction_datetime_by_template(self, template, string):
+        # пределывает переданный шаблон в regex-выражение шаблоны типа "yyyy, dd MMM hh:mm"
+        # передает дальнейшее выполнение в deconstruction_datetime_by_regex
+        templates = [
+            ["yyyy", r"(?P<year>-\d{1,4}|\d{1,4})"],
+            ["dd", r"(?P<day>\d{1,2})"],
+            ["hh", r"(?P<hour>\d{1,2})"],
+            ["mm", r"(?P<minute>\d{1,2})"],
+            ["ss", r"(?P<second>\d{1,2})"],
+            ["MMMM", r"(?P<month_text>[a-zA-Z]{3,9})"],
+            ["MMM", r"(?P<month_text>[a-zA-Z]{3})"],
+            ["MM", r"(?P<month>\d{1,2})"],
+        ]
+
+        for x in templates:
+            if x[0] in template:
+                template = template.replace(x[0], x[1])
+
+        return self.deconstruction_datetime_by_regex(template, string)
+
 
     def deconstruction_date(self, string):
         # Модуль производит разбор строки в которую предположительно записана дата
@@ -219,3 +307,5 @@ class Deconstruction(object):
         if hms['hour'] is not None and hms['min'] is not None: 
             return hms
         else: return False
+
+

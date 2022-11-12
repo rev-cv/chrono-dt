@@ -215,50 +215,53 @@ if __name__ == '__main__':
     # a = chrono("20221215", shift="-2y")
     # print(a)
     
-    i1 = Interval(
-        Chrono(2021, 5, 12),
-        Chrono(2022, 6, 20)
-    )
+    # i1 = Interval(
+    #     Chrono(2021, 5, 12),
+    #     Chrono(2022, 6, 20)
+    # )
 
-    i2 = Interval(
-        Chrono(2022, 12, 12),
-        Chrono(2022, 12, 25)
-    )
+    # i2 = Interval(
+    #     Chrono(2022, 12, 12),
+    #     Chrono(2022, 12, 25)
+    # )
 
-    i3 = Interval(
-        Chrono(2022, 1, 7),
-        Chrono(2022, 12, 25)
-    )
+    # i3 = Interval(
+    #     Chrono(2022, 1, 7),
+    #     Chrono(2022, 12, 25)
+    # )
 
-    i4 = Interval(
-        Chrono(2004, 3, 2),
-        Chrono(2006, 6, 12)
-    )
+    # i4 = Interval(
+    #     Chrono(2004, 3, 2),
+    #     Chrono(2006, 6, 12)
+    # )
 
-    i5 = Interval(
-        Chrono(2005, 11, 14),
-        Chrono(2022, 12, 28)
-    )
+    # i5 = Interval(
+    #     Chrono(2005, 11, 14),
+    #     Chrono(2022, 12, 28)
+    # )
 
-    # i = Intervals(i1, i4, i2, i3)
+    # # i = Intervals(i1, i4, i2, i3)
 
 
-    # for x in i.skip():
-    #     print(x)
+    # # for x in i.skip():
+    # #     print(x)
 
-    a = Interval((2022,1,5, 15, 12, 0), roundOff="hour")
-    # print(a.getOccupancyFragments("day"), a.getOccupancy())
+    # a = Interval((2022,1,5, 15, 12, 0), roundOff="hour")
+    # # print(a.getOccupancyFragments("day"), a.getOccupancy())
 
-    # for x in a.fragments:
-    #     print(x)
+    # # for x in a.fragments:
+    # #     print(x)
+    # # print(a)
+    # a.fragmentation("minute")
     # print(a)
-    a.fragmentation("minute")
-    print(a)
-    print("-" * 25)
+    # print("-" * 25)
 
-    for i in range(len(a.fragments)):
-        # print(a.fragments[i].template(" START{{yyyy, MMMM}} (" + str(i+1) + " decade)"))
-        print(a.fragments[i])
+    # for i in range(len(a.fragments)):
+    #     # print(a.fragments[i].template(" START{{yyyy, MMMM}} (" + str(i+1) + " decade)"))
+    #     print(a.fragments[i])
+
+    a = Chrono(False).setByTemplate("yyyy, dd MMM", "2022, 15 Aug")
+    print(a)
 
 
 

@@ -878,11 +878,11 @@ class Chrono(object):
 
         regex = r'%QUA'	#квартал года
         if regex in temp:
-            qua = 'IV'
-            if self.m < 4: qua = 'I'      # type: ignore
-            elif self.m < 7: qua = "II"   # type: ignore
-            elif self.m < 10: qua = "III" # type: ignore
-            temp = sub(regex, f'{qua} quarter %Y', temp)
+            qua = 'Ⅳ'
+            if self.m < 4: qua = 'Ⅰ'      # type: ignore
+            elif self.m < 7: qua = "Ⅱ"   # type: ignore
+            elif self.m < 10: qua = "Ⅲ" # type: ignore
+            temp = sub(regex, qua, temp)
 
         regex = r'%Y'	#полный год
         if regex in temp:

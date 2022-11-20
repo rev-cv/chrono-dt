@@ -705,6 +705,85 @@ class Interval(object):
 
         return self
 
+    def step(self, st=0):
+        # «шагает» по интервалам в зависимости от roundOff
+        # если roundOff == "day", то при st = -1, период будет изменен на предыдущий день
+        # если roundOff == None, то интервал будет смещаться на свою длину
+        def setNew(inter):
+            self.s = inter.s
+            self.f = inter.f
+        if self.roundOff == "day":
+            setNew(Interval(Chrono(self.s).shift(day=st), roundOff="day"))
+        elif self.roundOff == "week":
+            # предполагается, что self.s при roundOff=="week" всегда понедельник
+            setNew(Interval(Chrono(self.s).shift(day=st*7), roundOff="week"))
+        elif self.roundOff == "decade":
+            ch = Chrono(self.s)
+            if st < 0:
+                while st < 0:
+                    if ch.d < 11: # type: ignore
+                        ch.y = ch.y if ch.m-1 > 0 else ch.y-1  # type: ignore
+                        ch.m = ch.m-1 if ch.m-1 > 0 else 12  # type: ignore
+                        ch.d = 21
+                    elif ch.d < 21:  # type: ignore
+                        ch.d = 1
+                    else:
+                        ch.d = 11
+                    st += 1
+            elif st > 0:
+                while st > 0:
+                    if ch.d < 11:  # type: ignore
+                        ch.d = 11
+                    elif ch.d < 21:  # type: ignore
+                        ch.d = 21
+                    else:
+                        ch.y = ch.y if ch.m < 12 else ch.y+1  # type: ignore
+                        ch.m = ch.m + 1 if ch.m < 12 else 1  # type: ignore
+                        ch.d = 1
+                    st -= 1
+            setNew(Interval(ch, roundOff="decade"))
+        elif self.roundOff == "month":
+            setNew(Interval(Chrono(self.s).shift(month=st), roundOff="month"))
+        elif self.roundOff == "quarter":
+            ch = Chrono(self.s.y, self.s.m, 1, 0, 0, 0)  # type: ignore
+            if st < 0:
+                while st < 0:
+                    if ch.m <= 3:  # type: ignore
+                        ch.y -= 1  # type: ignore
+                        ch.m = 10
+                    elif ch.m <= 6:  # type: ignore
+                        ch.m = 1
+                    elif ch.m <= 9:  # type: ignore
+                        ch.m = 4
+                    else:
+                        ch.m = 7
+                    st += 1
+            elif st > 0:
+                while st > 0:
+                    if ch.m <= 3:  # type: ignore
+                        ch.m = 4
+                    elif ch.m <= 6:  # type: ignore
+                        ch.m = 7
+                    elif ch.m <= 9:  # type: ignore
+                        ch.m = 10
+                    else:
+                        ch.m = 1
+                        ch.y += 1  # type: ignore
+                    st -= 1
+            setNew(Interval(ch, roundOff="quarter"))
+        elif self.roundOff == "year":
+            setNew(Interval(Chrono(self.s).shift(year=st), roundOff="year"))
+        elif self.roundOff == "decennary":
+            setNew(Interval(Chrono(self.s).shift(year=st*10), roundOff="decennary"))
+        elif self.roundOff == "hour":
+            setNew(Interval(Chrono(self.s).shift(hour=st), roundOff="hour"))
+        elif self.roundOff == "minute":
+            setNew(Interval(Chrono(self.s).shift(minute=st), roundOff="minute"))
+        elif self.roundOff is None:
+            diff = self.getDuration()
+            setNew(Interval(Chrono(self.s).shift(second=diff), roundOff="minute")) # type: ignore
+        return self
+
     def join(self, interval, greedy=False):
         # объединить два интервала
         # если greedy = False, то два интервала объединятся только

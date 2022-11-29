@@ -3,7 +3,7 @@ from re import sub, compile
 
 
 class Interval(object):
-    def __init__(self, s = None, f = None, roundOff = None, expand=True, about=None):
+    def __init__(self, dates = None, roundOff = None, expand=True, about=None):
         super(Interval, self).__init__()
 
         # roundOff — округляет интервал путем расширения, если expand=True
@@ -52,8 +52,11 @@ class Interval(object):
         self.setRoundOff(roundOff)
         self.expand = expand
 
-        self.set(s, f)
-
+        if type(dates) is tuple or type(dates) is list:
+            self.set(*dates)
+        else:
+            self.set(dates)
+            
         self.isReal(True)
         # ↑ проводит жесткую проверку на верность интервала в ошибкой если это не так
         
@@ -314,17 +317,17 @@ class Interval(object):
             elif s2 < s1 and s1 < f2 <= f1:
                 # старт интервала начинается раньше self. Обрезать!
                 self.fragments.append(
-                    Interval(self.s, x.f)
+                    Interval((self.s, x.f))
                 )
             elif s1 <= s2 < f1 and f2 > f1:
                 # старт интервала начался в self, но завершился после окончания self. Образать!
                 self.fragments.append(
-                    Interval( x.s, self.f )
+                    Interval( (x.s, self.f) )
                 )
             elif s2 <= s1 and f1 <= f2:
                 # интервал поглощается self, обрезать с двух сторон
                 self.fragments.append(
-                    Interval( self.s, self.f )
+                    Interval( (self.s, self.f) )
                 )
         return self
     
@@ -389,6 +392,32 @@ class Interval(object):
         self.fragments = list()
         proceed = True
 
+        def conversion_from_unixepoch():
+            self.fragments = [
+
+                Interval(
+                    Chrono(False).setUnixEpoch(x).toTimeZone(
+                        self.tz),  # type: ignore
+                    roundOff=frag
+                )
+
+                for x in self.fragments
+
+            ]
+        
+        def conversion_from_tuple():
+            self.fragments = [
+
+                Interval(
+                    Chrono(False).setTupleDate(*x).setTupleTime(0,0,0).toTimeZone(self.tz), # type: ignore
+                    roundOff=frag
+                )
+
+                for x in self.fragments
+
+            ]
+            
+
         if "day" == frag:
             c = Chrono(False).setChrono(self.s)
             if c.isDayBegun():
@@ -404,81 +433,52 @@ class Interval(object):
                 else:
                     proceed = False
                 current += 86400
+            
+            conversion_from_unixepoch()
 
         elif 'decade' == frag:
-            c = Chrono(False).setTupleTime(0, 0, 0)
-            current_dec = 0
-            if self.s.isDayBegun() is False and self.s.d == 1:  # type: ignore
-                # день не началася и является первым числом месяца
-                c.setTupleDate(self.s.y, self.s.m, 1)  # type: ignore
-            elif self.s.d < 11:# type: ignore
-                c.setTupleDate(self.s.y, self.s.m, 11)  # type: ignore
+            # "2014-10-11", "2014-11-01"
+            current_dec = 3
+            current_month = self.s.m # type: ignore
+            current_year = self.s.y  # type: ignore
+            if self.s.d == 1:        # type: ignore
                 current_dec = 1
-            elif self.s.d < 21:  # type: ignore
-                c.setTupleDate(self.s.y, self.s.m, 21)  # type: ignore
+            elif self.s.d <= 11:     # type: ignore
                 current_dec = 2
-            else:
-                c.setTupleDate(
-                    self.s.y if self.s.m + 1 <= 12 else self.s.y + 1,  # type: ignore
-                    self.s.m + 1 if self.s.m + 1 <= 12 else 1,  # type: ignore
-                    1
-                )
-            current = c.getUnixEpoch()
-            current_year = c.y
-            current_month = c.m
 
-            f = Chrono(False).setTupleTime(0, 0, 0)
-            if self.f.d <= 10: # type: ignore
-                f.setTupleDate(self.f.y, self.f.m, 1) # type: ignore
-            elif self.f.d <= 20: # type: ignore
-                f.setTupleDate(self.f.y, self.f.m, 11)  # type: ignore
-            else:
-                f.setTupleDate(self.f.y, self.f.m, 21)  # type: ignore
-            finish = f.getUnixEpoch()
-
-            i10 = 864000  # 10 дней
-            i31 = 950400  # 11 дней в некоторых 3х декадах месяца
-            i29 = 777600  # 9 дней в феврале високосного года
-            i28 = 691200  # 8 дней в феврале обычного года
-
-            increments = {
-                1:  [i10, i10, i31],
-                2:  [i10, i10, i29 if c.isLeapYear(current_year) else i28],
-                3:  [i10, i10, i31],
-                4:  [i10, i10, i10],
-                5:  [i10, i10, i31],
-                6:  [i10, i10, i10],
-                7:  [i10, i10, i31],
-                8:  [i10, i10, i31],
-                9:  [i10, i10, i10],
-                10: [i10, i10, i31],
-                11: [i10, i10, i10],
-                12: [i10, i10, i31],
-            }
-
-            self.fragments.append(current)
+            finish_dec = 3
+            finish_month = self.f.m  # type: ignore
+            finish_year = self.f.y   # type: ignore
+            if self.f.d < 11:        # type: ignore
+                finish_dec = 1
+            elif self.f.d < 21:      # type: ignore
+                finish_dec = 2
+            
+            d = {1:1,2:11,3:21}
 
             while proceed:
-                while proceed and current_dec < 3:
+                self.fragments.append(
+                    (current_year, current_month, d[current_dec])
+                )
 
-                    # type: ignore
-                    current += increments[current_month][current_dec] # type: ignore
+                current_dec += 1
 
-                    if current < finish:
-                        self.fragments.append(current)
-                        current_dec += 1
-                    else:
-                        proceed = False
+                if 3 < current_dec:
+                    current_dec = 1
+                    current_month += 1     # type: ignore
 
-                current_dec = 0
+                    if 12 < current_month:
+                        current_month = 1
+                        current_year += 1  # type: ignore
+                        
+                isDec = current_dec == finish_dec
+                isMonth = current_month == finish_month
+                isYear = current_year == finish_year
 
-                if current_month + 1 > 12: # type: ignore
-                    current_month = 1
-                    current_year += 1 # type: ignore
-                    increments[2][2] = i29 if c.isLeapYear(
-                        current_year) else i28
-                else:
-                    current_month += 1  # type: ignore
+                if isDec and isMonth and isYear:
+                    proceed = False
+            
+            conversion_from_tuple()
 
         elif 'month' == frag:
             c = Chrono(False).setTupleDate(
@@ -490,7 +490,7 @@ class Interval(object):
             current_month = c.m
 
             finish = Chrono(False).setTupleDate(self.f.y, self.f.m, 1) # type: ignore
-            finish.setTupleTime(0, 0, 0).getUnixEpoch()
+            finish = finish.setTupleTime(0, 0, 0).getUnixEpoch()
 
             i30 = 2592000  # 30 дней
             i31 = 2592000 + 86400  # 31 дней в некоторых 3х декадах месяца
@@ -526,6 +526,8 @@ class Interval(object):
                     increments[2] = i29 if c.isLeapYear(current_year) else i28
                 else:
                     current_month += 1  # type: ignore
+            
+            conversion_from_unixepoch()
 
         elif 'week' == frag:
             c = Chrono(False).setChrono(self.s)
@@ -552,63 +554,60 @@ class Interval(object):
                     self.fragments.append(current)
                 else:
                     proceed = False
+            
+            conversion_from_unixepoch()
 
         elif 'quarter' == frag:
-            c = Chrono(False).setChrono(self.s)
-            current_quarter = 1
-            if c.m == 1 and c.d == 1 and c.isDayBegun() is False:
-                # если 1 января и еще не начался день, то первый квартал
-                c.m, c.d, c.H, c.M, c.S = 1, 1, 0, 0, 0
-            if c.m <= 3:  # type: ignore
-                c.m, c.d, c.H, c.M, c.S = 4, 1, 0, 0, 0
-                current_quarter = 2
-            elif c.m <= 6:  # type: ignore
-                c.m, c.d, c.H, c.M, c.S = 7, 1, 0, 0, 0
-                current_quarter = 3
-            elif c.m <= 9:  # type: ignore
-                c.m, c.d, c.H, c.M, c.S = 10, 1, 0, 0, 0
-                current_quarter = 4
+            isDayNotBegun = self.s.isDayBegun() is False  # type: ignore
+
+            current_qua = 1
+            current_year = self.s.y  # type: ignore
+
+            if self.s.m == 1 and self.s.d == 1 and isDayNotBegun:  # type: ignore
+                pass
+            elif self.s.m < 4 or (self.s.m == 4 and self.s.d == 1 and isDayNotBegun): # type: ignore
+                current_qua = 2
+            elif self.s.m < 7 or (self.s.m == 7 and self.s.d == 1 and isDayNotBegun): # type: ignore
+                current_qua = 3
+            elif self.s.m == 10 and self.s.d == 1 and isDayNotBegun: # type: ignore
+                current_qua = 4
             else:
-                c.y, c.m, c.d, c.H, c.M, c.S = c.y+1, 1, 1, 0, 0, 0  # type: ignore
-            current = c.getUnixEpoch()
-            current_year = c.y
+                current_year += 1   # type: ignore
+            
+            isDayNotBegun = self.f.isDayBegun() is False  # type: ignore
+            
+            finish_qua = 4
+            finish_year = self.f.y  # type: ignore
 
-            f = Chrono(False).setChrono(self.f)
-            if f.m <= 3: # type: ignore
-                f.m, f.d, f.H, f.M, f.S = 1, 1, 0, 0, 0
-            elif f.m <= 6: # type: ignore
-                f.m, f.d, f.H, f.M, f.S = 3, 1, 0, 0, 0
-            elif f.m <= 9: # type: ignore
-                f.m, f.d, f.H, f.M, f.S = 6, 1, 0, 0, 0
-            elif f.m <= 12:  # type: ignore
-                f.m, f.d, f.H, f.M, f.S = 9, 1, 0, 0, 0
-            finish = f.getUnixEpoch()
-
-            fe = 29 if c.isLeapYear(current_year) else 28
-            increments = {
-                1: (31 + fe + 31) * 86400,
-                2: (30 + 31 + 30) * 86400,
-                3: (31 + 31 + 30) * 86400,
-                4: (31 + 30 + 31) * 86400,
-            }
-
-            self.fragments.append(current)
+            if self.f.m == 1 and self.f.d == 1 and isDayNotBegun:  # type: ignore
+                finish_year -= 1     # type: ignore
+            elif self.f.m < 4:       # type: ignore
+                finish_qua = 1
+            elif self.f.m < 7:       # type: ignore
+                finish_qua = 2
+            elif self.f.m < 10:      # type: ignore
+                finish_qua = 3
+            
+            q = {1:1,2:4,3:7,4:10}
 
             while proceed:
-                while proceed and current_quarter <= 4:
-                    current += increments[current_quarter]
+                self.fragments.append(
+                    (current_year, q[current_qua], 1)
+                )
 
-                    if current < finish:
-                        self.fragments.append(current)
-                    else:
-                        proceed = False
+                current_qua += 1
 
-                    current_quarter += 1
+                if 4 < current_qua:
+                    current_qua = 1
+                    current_year += 1  # type: ignore
 
-                current_year += 1  # type: ignore
-                current_quarter = 1
-                fe = 29 if c.isLeapYear(current_year) else 28
-                increments[1] = (31 + fe + 31) * 86400
+                isMoreYear = current_year > finish_year  # type: ignore
+                isMoreQua = current_year == finish_year and current_qua > finish_qua
+                
+                if isMoreYear or isMoreQua:
+                    proceed = False
+
+            conversion_from_tuple()
 
         elif 'year' == frag:
             c = Chrono(False).setChrono(self.s)
@@ -632,6 +631,8 @@ class Interval(object):
                 current_year += 1  # type: ignore
                 # ↓ 366/365 * 86400
                 current += 31622400 if c.isLeapYear(current_year) else 31536000
+            
+            conversion_from_unixepoch()
 
         elif 'decennary' == frag:
             c = Chrono(False).setChrono(self.s)
@@ -652,6 +653,8 @@ class Interval(object):
                     proceed = False
 
                 c.y += 10
+            
+            conversion_from_unixepoch()
 
         elif 'hour' == frag:
             c = Chrono(False).setChrono(self.s)
@@ -671,6 +674,8 @@ class Interval(object):
                 else:
                     proceed = False
                 current += 3600
+            
+            conversion_from_unixepoch()
 
         elif 'minute' == frag:
             c = Chrono(False).setChrono(self.s)
@@ -691,17 +696,7 @@ class Interval(object):
                     proceed = False
                 current += 60
 
-        self.fragments = [
-
-            Interval(
-                Chrono(False).setUnixEpoch(x).toTimeZone(
-                    self.tz),  # type: ignore
-                roundOff=frag
-            )
-
-            for x in self.fragments
-
-        ]
+            conversion_from_unixepoch()
 
         return self
 
@@ -795,7 +790,7 @@ class Interval(object):
                 [self.s, self.f, interval.s, interval.f],
                 key=lambda ch: ch.getUnixEpoch()  # type: ignore
             )
-            self = Interval(chs[0], chs[-1])
+            self = Interval((chs[0], chs[-1]))
             return self
         else:
             result = self._defineBoundary(self, interval)
@@ -830,11 +825,11 @@ class Interval(object):
         elif u2 == u3 or (u3 < u2 and u1 <= u3):
             # i1 и i2 следуют друг за другом стык-в-стык
             # или начало i2 лежит в периоде i1
-            return Interval(i1.s, i2.f)
+            return Interval((i1.s, i2.f))
         elif u4 == u1 or (u1 < u4 and u3 <= u1):
             # i2 и i1 следуют друг за другом стык-в-стык
             # или начала i1 лежит в периоде i2
-            return Interval(i2.s, i1.f)
+            return Interval((i2.s, i1.f))
 
         return False
 
@@ -897,7 +892,7 @@ class Intervals(object):
                 if current.f.getUnixEpoch() < x.s.getUnixEpoch():
                     result.append(
                         Interval(
-                            current.f, x.s
+                            (current.f, x.s)
                         )
                     )
                     current = x
@@ -954,4 +949,12 @@ class Intervals(object):
 
 
 if __name__ == '__main__':
-    print(Interval())
+    year = Interval(("2014-1-1", "2015-1-1")).fragmentation("quarter")
+    s = 'START[[yyyy-MM-dd]] - FINISH[[yyyy-MM-dd]]'
+
+    for y in year.fragments:
+        
+        print(
+            y.template(s),
+            y.s.F("%QUA")
+        )

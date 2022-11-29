@@ -570,7 +570,7 @@ class Chrono(object):
         # получение недели с начала года, начиная с первого понедельника
         days_number = self.getDayYear()
         days_number -= self.getWeekday()
-        week_number = 0
+        week_number = 0 if Chrono(self.y, 1, 1, 0, 0, 0).getWeekday() != 1 else 1
         while days_number > 0:
             days_number -= 7
             week_number += 1
@@ -1385,3 +1385,8 @@ class Chrono(object):
         if self.getUnixEpoch() >= other.getUnixEpoch():
             return True
         else: return False
+
+if __name__ == '__main__':
+    a = Chrono("2018-01-01")
+
+    print(a.getWeekYear())

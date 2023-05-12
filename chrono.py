@@ -4,7 +4,7 @@ import time
 
 from ch_catchers import *
 from ch_pitchers import *
-from ch_transformators import toTimeZone, shift, shiftTextCommand
+from ch_mutators import toTimeZone, shift, shiftTextCommand
 from ch_formators import format, template
 
 
@@ -306,6 +306,10 @@ class Chrono(object):
     # ↓ получить tuple-даты/времени
     def getTupleDateTime(self):
         return (self.y, self.m, self.d, self.H, self.M, self.S, self.tz)
+    
+    # ↓ получить tuple-даты/времени. Аналог getTupleDateTime result = *chrono_object
+    def __iter__(self):
+        return iter((self.y, self.m, self.d, self.H, self.M, self.S, self.tz))
 
     # ↓ получить tuple-даты
     def getTupleDate(self):
@@ -378,30 +382,44 @@ class Chrono(object):
 
     # OPERATORS ↲
 
-    #x < y
+    #self < other
     def __lt__(self, other):
         return True if self.getUnixEpoch() < other.getUnixEpoch() else False
 
-    #x <= y
+    #self <= other
     def __le__(self, other):
         return True if self.getUnixEpoch() <= other.getUnixEpoch() else False
 
-    #x == y
+    #self == other
     def __eq__(self, other):
         return True if self.getUnixEpoch() == other.getUnixEpoch() else False
 
-    #x != y
+    #self != other
     def __ne__(self, other):
         return True if self.getUnixEpoch() != other.getUnixEpoch() else False
 
-    #x > y
+    #self > other
     def __gt__(self, other):
         return True if self.getUnixEpoch() > other.getUnixEpoch() else False
 
-    #x >= y
+    #self >= other
     def __ge__(self, other):
         return True if self.getUnixEpoch() >= other.getUnixEpoch() else False
     
+    # вычислить разницу между двумя датами
+    def __sub__(self, other):
+        if isinstance(other, datetime):
+            pass
+        elif isinstance(other, self.chrono):
+            d1 = datetime.datetime(self.y, self.m, self.d, self.H, self.M, self.S)
+            td = (other.y, other.m, other.d, other.H, other.M, other.S)
+            d2 = datetime.datetime(*td) if self.tz == other.tz else datetime.datetime(
+                *toTimeZone( other.tz, self.tz, td )
+            )
+            return (d1 - d2).total_seconds()
+
+        return None
+
 
 if __name__ == '__main__':
     a = Chrono("2018-01-01")
@@ -410,4 +428,4 @@ if __name__ == '__main__':
     print(a)
 
     b = eval(a.__repr__())
-    print(b('+25'))
+    print(*b)

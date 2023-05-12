@@ -1,9 +1,11 @@
 import sys
+import datetime
 from re import findall, sub
 from ch_validators import *
 from ch_extractors import *
 from ch_pitchers import *
-from ch_transformators import shift, shiftTextCommand
+from ch_mutators import shift, shiftTextCommand
+
 
 def setDate(y = 1970, m = 1, d = 1):
     isDate(y, m, d, isGenerateError=True)
@@ -33,7 +35,8 @@ def setDateTimeFromStr(string):
     raise Exception("ch_catchers.setDateTimeFromStr(): failed to extract date from string") 
 
 def setUnixEpoch(unixepoch):
-    return shift(second = unixepoch)
+    dt = datetime.datetime.fromtimestamp(unixepoch)
+    return (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 def setISO(iso):
     result = dtExtractByLogic(iso)

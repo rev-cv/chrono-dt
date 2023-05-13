@@ -294,7 +294,6 @@ class Chrono(object):
 
     # GETTERS ↓
 
-
     # ↓ получить python-объект datetime.datetime
     def getDateTime(self):
         return datetime.datetime(self.y, self.m, self.d, self.H, self.M, self.S)
@@ -378,6 +377,7 @@ class Chrono(object):
     def __repr__(self):
         temp = 'Chrono(%Y, %m, %d, %H, %M, %S, "%Z")'
         return format(temp, self.y, self.m, self.d, self.H, self.M, self.S, self.tz)
+
 
 
     # OPERATORS ↲

@@ -1,3 +1,4 @@
+import datetime
 from ch_mutators import shift
 from ch_pitchers import getWeekday, getUnixEpoch
 
@@ -115,31 +116,5 @@ def setRoundOff(roundOff):
         return roundOff
     raise Exception("Invalid argument passed for 'roundOff'")
 
-def setFramentation(start, finish, intervals):
-    # задает список интервалов для self.fragments
-    # Из переданного исписка исключаются интервалы не входящие в self
-    # интервалы входящие частично в self обрезаются 
-    s1 = getUnixEpoch(*start)
-    f1 = getUnixEpoch(*finish)
 
-    fragments = list()
-
-    for x in intervals:
-        s2 = getUnixEpoch(*x.s)
-        f2 = getUnixEpoch(*x.f)
-
-        if s1 <= s2 and f2 <= f1:
-            # интервал входит в self
-            fragments.append( [x.s, x.f] )
-        elif s2 < s1 and s1 < f2 <= f1:
-            # старт интервала начинается раньше self. Обрезать!
-            fragments.append( [start, x.f])
-        elif s1 <= s2 < f1 and f2 > f1:
-            # старт интервала начался в self, но завершился после окончания self. Образать!
-            fragments.append( [x.s, finish] )
-        elif s2 <= s1 and f1 <= f2:
-            # интервал поглощается self, обрезать с двух сторон
-            fragments.append( [start, finish] )
-    
-    return fragments
 

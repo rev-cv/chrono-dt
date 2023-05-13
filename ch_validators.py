@@ -78,3 +78,15 @@ def isDayBegun(H, M, S):
 def isTimeZone(TimeZone):
     # проверка временной зоны на возможность использования
     return True if TimeZone in all_timezones else False
+
+def validatorLastDayInMonth(y, m, d):
+    # в отличии от isCountDaysInMonth, если проверка не пройдена возвращает последний день месяца
+    if isCountDaysInMonth(y, m, d):
+        return d
+    else:
+        if m in [1, 3, 5, 7, 8, 10, 12]:
+            return 31
+        elif m in [4, 6, 9, 11]:
+            return 30
+        elif m == 2:
+            return 29 if isLeapYear(y) else 28

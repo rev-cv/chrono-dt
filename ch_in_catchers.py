@@ -1,23 +1,79 @@
 import datetime
 from ch_mutators import shift
-from ch_pitchers import getWeekday, getUnixEpoch
+from ch_pitchers import getWeekday
+from Chrono import Chrono
 
-def setStart(start, isExpansion, roundOff):
+def setInterval(start = None, finish = None, roundoff = None, expansion=True):
+    # start → [1970, 1, 1, 0, 0, 0]
+
+    result = [[1970, 1, 1, 0, 0, 0], [1970, 1, 1, 0, 0, 0]]
+
+    if start is False:
+        # предполгается, что интервал будет задан вручную
+        return result
+
+    if start is not None and finish is not None:
+        # → передано начало и окончание интервала
+        # → динамическое «округление» не задано (roundoff is None) 
+
+        if type(start) is not list or type(start) is not tuple:
+            s = Chrono(start)
+            start = [s.y, s.m, s.d, s.H, s.M, s.S]
+        if type(finish) is not list or type(start) is not tuple:
+            f = Chrono(finish)
+            finish = [f.y, f.m, f.d, f.H, f.M, f.S]
+
+        result[0] = setStart(start, expansion, roundoff)
+        result[1] = setFinish(finish, expansion, roundoff)
+    else:
+        roundoff = "day" if roundoff is None else roundoff
+        # ↑ если для интервала не передано start и finish, то ↲
+        # дальнейшее создание интервала не имеет смысла ↲
+        # без заданных roundoff и expansion
+            
+        if start is not None and finish is None:
+
+            if type(start) is not list or type(start) is not tuple:
+                s = Chrono(start)   
+                start = [s.y, s.m, s.d, s.H, s.M, s.S]
+
+            result[0] = setStart(start, expansion, roundoff)
+            result[1] = setFinish(start, expansion, roundoff)
+
+        elif start is None and finish is not None:
+
+            if type(start) is not list or type(finish) is not tuple:
+                f = Chrono(finish)   
+                finish = [f.y, f.m, f.d, f.H, f.M, f.S]
+
+            result[0] = setStart(finish, expansion, roundoff)
+            result[1] = setFinish(finish, expansion, roundoff)
+        else:
+            now = datetime.datetime.now()
+            tuplenow = [now.year, now.month, now.day, now.hour, now.minute, now.second]
+            result[0] = setStart(tuplenow, expansion, roundoff)
+            result[1] = setFinish(tuplenow, expansion, roundoff)
+            
+    if datetime.datetime(*result[0]) < datetime.datetime(*result[1]):
+        return result    
+    raise Exception("Error. The resulting interval is subject to collapse.")
+
+def setStart(start, expansion, roundoff):
     # start = [1970, 1, 1, 0, 0, 0]
-    if roundOff is not None:
-        if isExpansion is True:
-            return decrease(start, roundOff)
-        elif isExpansion is False:
-            return increase(start, roundOff)
+    if roundoff is not None:
+        if expansion is True:
+            return decrease(start, roundoff)
+        elif expansion is False:
+            return increase(start, roundoff)
     return start
 
-def setFinish(finish, isExpansion, roundOff):
+def setFinish(finish, expansion, roundoff):
     # finish = [1970, 1, 1, 0, 0, 0]
-    if roundOff is not None:
-        if isExpansion is True:
-            return increase(finish, roundOff)
-        elif isExpansion is False:
-            return decrease(finish, roundOff)
+    if roundoff is not None:
+        if expansion is True:
+            return increase(finish, roundoff)
+        elif expansion is False:
+            return decrease(finish, roundoff)
     return finish
 
 def increase(td, ro):
@@ -31,7 +87,11 @@ def increase(td, ro):
         y, m, d, H, M, S = shift(hour=1, tdt=(y, m, d, H + 1, 0, 0))
     elif 'year' == ro:
         y, m, d, H, M, S = y + 1, 1, 1, 0, 0, 0
-    elif 'decade' == ro:
+    elif 'dece' == ro[:4]: # decennary
+        H, M, S = 0, 0, 0,
+        d, m = 1, 1
+        y = int(str(y)[:-1] + "0") + 10
+    elif 'dec' == ro[:3]: # decade
         H, M, S = 0, 0, 0
         if d <= 10:
             d = 11
@@ -39,7 +99,7 @@ def increase(td, ro):
             d = 21
         else:
             y, m, d, H, M, S = shift(month=1, tdt=(y, m, 1, H, M, S))
-    elif 'quarter' == ro:
+    elif 'qua' == ro[:3]: # quarter
         H, M, S, d = 0, 0, 0, 1
         if m <= 3:
             m = 4
@@ -49,11 +109,7 @@ def increase(td, ro):
             m = 10
         else:
             y, m = y + 1, 1
-    elif 'decennary' == ro:
-        H, M, S = 0, 0, 0,
-        d, m = 1, 1
-        y = int(str(y)[:-1] + "0") + 10
-    elif "minute" == ro:
+    elif "min" == ro[:3]: # minute
         y, m, d, H, M, S = shift(minute=1, tdt=(y, m, d, H, M, 0))
     elif 'week' == ro:
         # смещение до следующего понедельника
@@ -76,7 +132,11 @@ def decrease(td, ro):
     elif 'year' == ro:
         H, M, S = 0, 0, 0
         d, m = 1, 1
-    elif 'decade' == ro:
+    elif 'dece' == ro[:4]: # decennary
+        H, M, S = 0, 0, 0,
+        d, m = 1, 1
+        y = int(str(y)[:-1] + "0")
+    elif 'dec' == ro[:3]: # decade
         H, M, S = 0, 0, 0
         if d <= 10:
             d = 1
@@ -84,7 +144,7 @@ def decrease(td, ro):
             d = 11
         else:
             d = 21
-    elif 'quarter' == ro:
+    elif 'qua' == ro[:3]: # quarter
         H, M, S, d = 0, 0, 0, 1
         if m < 4:
             m = 1
@@ -94,11 +154,7 @@ def decrease(td, ro):
             m = 7
         else:
             m = 10
-    elif 'decennary' == ro:
-        H, M, S = 0, 0, 0,
-        d, m = 1, 1
-        y = int(str(y)[:-1] + "0")
-    elif "minute" == ro:
+    elif "min" == ro[:3]: # minute
         S = 0
     elif 'week' == ro:
         # смещение до прошлого понедельника
@@ -109,12 +165,15 @@ def decrease(td, ro):
         
     return (y, m, d, H, M, S)
 
-fos = (None, 'decennary', 'year', 'quarter', 'month', 'decade', 'week', 'day', 'hour', 'minute')
+fos = (
+    None, 
+    'decennary', 'year', 'quarter', 'month', 'decade', 'week', 'day', 'hour', 'minute',
+    'dece', 'qua', 'dec', 'min'
+)
 
-def setRoundOff(roundOff):
-    if roundOff in fos:
-        return roundOff
-    raise Exception("Invalid argument passed for 'roundOff'")
-
+def setRoundOff(roundoff):
+    if roundoff in fos:
+        return roundoff
+    raise Exception("Invalid argument passed for 'roundoff'")
 
 

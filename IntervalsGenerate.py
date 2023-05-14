@@ -1,5 +1,5 @@
 import datetime
-from ch_validators import isDayBegun, isLeapYear
+from ch_validators import isDayBegun, isLeapYear, isTupleInterval
 
 def sumIntervals(interval_list, measure='second'):
     # общая сумма всех интервалов содержащихся в self
@@ -42,9 +42,9 @@ def occIntervals(interval_list, measure='second'):  # occupancy / заполне
         return round(diff / 86400, 1)
 
 
-def getOccupancyPercent(s, f, intervals):
+def getOccupancyPercent(s, f, intervals) -> float:
     # выдает процент заполненности интервала s—f интервалами из intervals
-    intervals = setFragmentInterval(s, f, intervals)
+    intervals = fragmentByIntervals(s, f, intervals)
     # ↑ убирает и обрезает интервалы выходящие за пределы s—f
     # ↓ длительность периода s—f
     diff = (datetime.datetime(*f) - datetime.datetime(*s)).total_seconds()
@@ -53,7 +53,7 @@ def getOccupancyPercent(s, f, intervals):
     return round(frag * 100 / diff, 1)
 
 
-def findSkipIntervals(interval_list):
+def findSkipIntervals(interval_list) -> list:
     # находит между интервалами пропуски
     # возвращает найденные пропуски в виде интервалов
     result = list()
@@ -110,15 +110,19 @@ def merge2Intervals(i1s, i1f, i2s, i2f, greedy = False):
             datetime.datetime(*i2s),
             datetime.datetime(*i2f)
         ])
-        return (chs[0], chs[-1])
+        s, f = chs[0], chs[-1]
+        return (
+            (s.year, s.month, s.day, s.hour, s.minute, s.second),
+            (f.year, f.month, f.day, f.hour, f.minute, f.second)
+        )
     else:
         result = defineBoundary(i1s, i1f, i2s, i2f)
         if result is not False:
             return result
-    return False
+    raise Exception(f'{__name__}.{merge2Intervals.__name__}(): Error when merging intervals. Merge options are probably set incorrectly.')
 
 
-def mergeIntervals(interval_list, isTuple=True):
+def mergeIntervals(interval_list, isTuple=True) -> list:
     # интервалы между которыми не существует пропусков объединяются в один интервал
     # выдается список объедененныъх интервалов
     result = list()
@@ -194,8 +198,24 @@ def mergeIntervals(interval_list, isTuple=True):
     else:
         return result
 
+def subtractByIntervals(s, f, intervals) -> list:
+    # задать фрагментацию для интервала s—f ↲
+    # посредством вычитания интервалов из s—f
+    cutoff = fragmentByIntervals(s, f, intervals)
+    skips = findSkipIntervals(cutoff)
 
-def setFragmentInterval(s, f, intervals):
+    if len(cutoff) > 0:
+        ds = sorted(cutoff, key=lambda x: datetime.datetime(*x[0]))
+        if datetime.datetime(*s) != datetime.datetime(*ds[0][0]):
+            skips.insert(0, (s, ds[0][0]))
+
+        df = sorted(cutoff, key=lambda x: datetime.datetime(*x[1]))
+        if datetime.datetime(*f) != datetime.datetime(*df[-1][1]):
+            skips.append((df[-1][1], f))
+    
+    return skips
+
+def fragmentByIntervals(s, f, intervals) -> list:
     # задать фрагментацию для интервала s—f
     # Из переданного исписка исключаются интервалы не входящие в self
     # интервалы входящие частично в self обрезаются 
@@ -224,7 +244,7 @@ def setFragmentInterval(s, f, intervals):
     return fragments
 
 
-def fragmentByDay(s, f):
+def fragmentByDay(s, f) -> list:
     # фрагментировать период s—f по дням
     # начало дня → 2023-05-11 00:00:00
     # окончание дня → 2023-05-12 00:00:00
@@ -252,7 +272,7 @@ def fragmentByDay(s, f):
 
     return fragments
 
-def fragmentByDecade(s, f):
+def fragmentByDecade(s, f) -> list:
     # фрагментировать период s—f по декадам
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -286,9 +306,6 @@ def fragmentByDecade(s, f):
         df = 21
 
     ending = datetime.datetime(yf, mf, df, 0, 0, 0).timestamp()
-
-    if current >= ending:
-        raise Exception("The period cannot be fragmented into intervals of a long decade.")
 
     i10 = 864000 # 10 дней
     i31 = 950400 # 11 дней в некоторых 3х декадах месяца
@@ -348,7 +365,7 @@ def fragmentByDecade(s, f):
 
     return fragments
 
-def fragmentByMonth(s, f):
+def fragmentByMonth(s, f) -> list:
     # фрагментировать период s—f по месяцам
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -359,7 +376,7 @@ def fragmentByMonth(s, f):
     if isDayBegun(Hs, Ms, Ss) or ds > 1:
         ys, ms = (ys, ms + 1) if ms + 1 <= 12 else (ys + 1, 1)
 
-    current = datetime.datetime(ys, ms, ds, 0, 0, 0).timestamp()
+    current = datetime.datetime(ys, ms, 1, 0, 0, 0).timestamp()
     ending = datetime.datetime(yf, mf, 1, 0, 0, 0).timestamp()
 
     i30 = 2592000 # 30 дней
@@ -368,7 +385,7 @@ def fragmentByMonth(s, f):
     i28 = 2419200 # 28 дней в феврале обычного года
 
     increments = {
-        1:  i30,
+        1:  i31,
         2:  i29 if isLeapYear(ys) else i28,
         3:  i31,
         4:  i30,
@@ -408,7 +425,7 @@ def fragmentByMonth(s, f):
 
     return fragments
 
-def fragmentByWeek(s, f):
+def fragmentByWeek(s, f) -> list:
     # фрагментировать период s—f по неделям
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -445,7 +462,7 @@ def fragmentByWeek(s, f):
 
     return fragments
 
-def fragmentByQuarter(s, f):
+def fragmentByQuarter(s, f) -> list:
     # фрагментировать период s—f по квартлам
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -506,7 +523,7 @@ def fragmentByQuarter(s, f):
 
     return fragments
 
-def fragmentByYear(s, f):
+def fragmentByYear(s, f) -> list:
     # фрагментировать период s—f по годам
     ys, ms, ds, Hs, Ms, Ss = s
 
@@ -530,7 +547,7 @@ def fragmentByYear(s, f):
 
     return fragments
 
-def fragmentByDecennary(s, f):
+def fragmentByDecennary(s, f) -> list:
     # фрагментировать период s—f по десятилетиям
     ys, ms, ds, Hs, Ms, Ss = s
 
@@ -558,7 +575,7 @@ def fragmentByDecennary(s, f):
 
     return fragments
 
-def fragmentByHour(s, f):
+def fragmentByHour(s, f) -> list:
     # фрагментировать период s—f по часам
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -587,7 +604,7 @@ def fragmentByHour(s, f):
 
     return fragments
 
-def fragmentByMinute(s, f):
+def fragmentByMinute(s, f) -> list:
     # фрагментировать период s—f по минутам
     ys, ms, ds, Hs, Ms, Ss = s
     yf, mf, df, Hf, Mf, Sf = f
@@ -617,6 +634,26 @@ def fragmentByMinute(s, f):
     return fragments
 
 
+def convertIntervals(intervals, to="tuple") -> list:
+    # Принимает список предположительно интервалов
+    # интервал может иметь вид
+    # либо ((1970, 1, 1, 0, 0, 0), (1970, 1, 25, 0, 0, 0))
+    # либо Interval()
+    from Interval import Interval
+
+    result = list()
+
+    for x in intervals:
+        isTuple = isTupleInterval(x)
+        isInterval = isinstance(x, Interval)
+        if isTuple  and to == "interval":
+            result.append( Interval(x) )
+        elif isInterval and to == "tuple":
+            result.append(( x.s, x.f ))
+        elif isTuple or isInterval:
+            result.append(x)
+    
+    return result
 
 
 

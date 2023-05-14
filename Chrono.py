@@ -248,7 +248,7 @@ class Chrono(object):
 
 
 
-    # TRANSFORMATORS ↲
+    # MUTATTORS ↲
     
     # задает смещение даты текстовыми командами
     def shiftTC(self, string):

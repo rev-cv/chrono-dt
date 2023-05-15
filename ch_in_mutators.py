@@ -46,7 +46,7 @@ def chgToStepInterval(s, step = 0, roundoff = "day", expansion = True):
             setFinish((s[0] + step * 10, s[1], s[2], 0, 0, 5), expansion, roundoff),
         ]
 
-    elif roundoff == "months":
+    elif roundoff == "month":
         y, m, *ttt = s
         if step < 0:
             while step < 0:

@@ -89,10 +89,10 @@ class Chrono(object):
                 # 20221212041255
                 self.y, self.m, self.d, self.H, self.M, self.S = setDateTimeFromStr(y)
 
-        elif isinstance(y, datetime):
+        elif isinstance(y, datetime.datetime):
             self.setDT(y)
 
-        elif isinstance(y, self.chrono):
+        elif isinstance(y, Chrono):
             # является ли объект chrono
             self.setChrono(y)
 

@@ -1,5 +1,6 @@
 import datetime
-from ch_validators import isDayBegun, isLeapYear, isTupleInterval
+from ch_validators import isDayBegun, isLeapYear
+from ch_in_validators import isTupleInterval
 
 def sumIntervals(interval_list, measure='second'):
     # общая сумма всех интервалов содержащихся в self

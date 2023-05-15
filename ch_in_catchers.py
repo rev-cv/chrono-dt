@@ -8,6 +8,8 @@ def setInterval(start = None, finish = None, roundoff = None, expansion=True):
 
     result = [[1970, 1, 1, 0, 0, 0], [1970, 1, 1, 0, 0, 0]]
 
+    
+
     if start is False:
         # предполгается, что интервал будет задан вручную
         return result
@@ -32,22 +34,13 @@ def setInterval(start = None, finish = None, roundoff = None, expansion=True):
         # без заданных roundoff и expansion
             
         if start is not None and finish is None:
-
-            if type(start) is not list or type(start) is not tuple:
-                s = Chrono(start)   
-                start = [s.y, s.m, s.d, s.H, s.M, s.S]
-
             result[0] = setStart(start, expansion, roundoff)
             result[1] = setFinish(start, expansion, roundoff)
 
         elif start is None and finish is not None:
-
-            if type(start) is not list or type(finish) is not tuple:
-                f = Chrono(finish)   
-                finish = [f.y, f.m, f.d, f.H, f.M, f.S]
-
             result[0] = setStart(finish, expansion, roundoff)
             result[1] = setFinish(finish, expansion, roundoff)
+            
         else:
             now = datetime.datetime.now()
             tuplenow = [now.year, now.month, now.day, now.hour, now.minute, now.second]

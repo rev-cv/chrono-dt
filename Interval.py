@@ -63,13 +63,14 @@ class Interval(object):
             self.expansion = dates.expansion
         elif isinstance(dates, Chrono):
             self.s, self.f = setInterval(
-                (dates.y, dates.m, dates.d, dates.H, dates.M, dates.S),
-                dates, None, self.roundoff, self.expansion
+                dates.getTupleDateTime()[:-1], None, self.roundoff, self.expansion
             )
             self.tz = dates.tz
         else:
             self.s, self.f = setInterval(dates, None, self.roundoff, self.expansion)
 
+        return self
+    
 
     # QUASTIONS ↲
 

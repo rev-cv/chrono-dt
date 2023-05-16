@@ -92,8 +92,8 @@ def chgToStepInterval(s, step = 0, roundoff = "day", expansion = True):
                     d = 1
                 step -= 1
         return [
-            setStart((y, m, 1, 0, 0, 0), expansion, roundoff),
-            setFinish((y, m, 1, 0, 0, 5), expansion, roundoff),
+            setStart((y, m, d, 0, 0, 0), expansion, roundoff),
+            setFinish((y, m, d, 0, 0, 5), expansion, roundoff),
         ]
     
     elif roundoff == "quarter":

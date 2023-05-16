@@ -33,7 +33,7 @@ def isReal(start, finish, isExpansion = True, isGenerateError=False):
         return False
     return True
 
-def isDateWithinInterval(date, start, finish):
+def isDateWithinInterval(start, finish, date):
     # входит ли переданная дата в данный период?
 
     if type(start) is list or type(start) is tuple:
@@ -45,7 +45,7 @@ def isDateWithinInterval(date, start, finish):
     if type(date) is list or type(date) is tuple:
         date = datetime.datetime(*date)
     
-    if start <= date <= finish:
+    if start <= date < finish:
         return True
     return False
 
@@ -97,13 +97,13 @@ def isTupleInterval(interval):
     # проверяет, является ли интервал типа ((1970, 1, 1, 0, 0, 0), (1970, 1, 25, 0, 0, 0))
     isTuple = True
     
-    if type(interval) is not tuple or type(interval) is not list:
+    if type(interval) is not tuple and type(interval) is not list:
         isTuple = False
 
     if len(interval) != 2:
         isTuple = False
 
-    if type(interval[0]) is not tuple or type(interval[0]) is not list:
+    if type(interval[0]) is not tuple and type(interval[0]) is not list:
         isTuple = False
 
     if len(interval[0]) != 6:
@@ -114,7 +114,7 @@ def isTupleInterval(interval):
             isTuple = False
             break
     
-    if type(interval[1]) is not tuple or type(interval[1]) is not list:
+    if type(interval[1]) is not tuple and type(interval[1]) is not list:
         isTuple = False
 
     if len(interval[1]) != 6:

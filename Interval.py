@@ -55,17 +55,30 @@ class Interval(object):
                     (dates[1].y, dates[1].m, dates[1].d, dates[1].H, dates[1].M, dates[1].S),
                     self.roundoff, self.expansion
                 )
+            elif type(dates[0]) is str and type(dates[1]) is str:
+                cs = Chrono(dates[0])
+                cf = Chrono(dates[1])
+                self.s, self.f = setInterval(
+                    (cs.y, cs.m, cs.d, cs.H, cs.M, cs.S),
+                    (cf.y, cf.m, cf.d, cf.H, cf.M, cf.S),
+                    self.roundoff, self.expansion
+                )
+            else:
+                raise Exception(f"{__name__}.{self.set.__name__}(): It is not clear what was received.")
+            
         elif isinstance(dates, Interval):
             # интервал получен как Interval
             self.s, self.f = list(*dates.s), list(*dates.f)
             self.tz = dates.tz
             self.roundoff = dates.roundoff
             self.expansion = dates.expansion
+
         elif isinstance(dates, Chrono):
             self.s, self.f = setInterval(
                 dates.getTupleDateTime()[:-1], None, self.roundoff, self.expansion
             )
             self.tz = dates.tz
+
         else:
             self.s, self.f = setInterval(dates, None, self.roundoff, self.expansion)
 
@@ -90,7 +103,7 @@ class Interval(object):
         # ↓ если передана дата
         else:
             d = Chrono(arg)
-            return isDateWithinInterval(self.s, self.f, d.getDateTime(), isFullEntry)
+            return isDateWithinInterval(self.s, self.f, d.getDateTime())
     
 
     # MUTATTORS ↲
@@ -179,6 +192,7 @@ class Interval(object):
 
 
     def __str__(self) -> str:
+        print(self.s, self.f)
         return f'{self.s[0]}-{self.s[1]}-{self.s[2]} — {self.f[0]}-{self.f[1]}-{self.f[2]}'
     
     

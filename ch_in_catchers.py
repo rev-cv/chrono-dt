@@ -8,20 +8,18 @@ def setInterval(start = None, finish = None, roundoff = None, expansion=True):
 
     result = [[1970, 1, 1, 0, 0, 0], [1970, 1, 1, 0, 0, 0]]
 
-    
-
     if start is False:
         # предполгается, что интервал будет задан вручную
         return result
 
     if start is not None and finish is not None:
         # → передано начало и окончание интервала
-        # → динамическое «округление» не задано (roundoff is None) 
+        # → динамическое «округление» не задано (roundoff is None)
 
-        if type(start) is not list or type(start) is not tuple:
+        if type(start) is not list and type(start) is not tuple:
             s = Chrono(start)
             start = [s.y, s.m, s.d, s.H, s.M, s.S]
-        if type(finish) is not list or type(start) is not tuple:
+        if type(finish) is not list and type(start) is not tuple:
             f = Chrono(finish)
             finish = [f.y, f.m, f.d, f.H, f.M, f.S]
 
@@ -46,10 +44,14 @@ def setInterval(start = None, finish = None, roundoff = None, expansion=True):
             tuplenow = [now.year, now.month, now.day, now.hour, now.minute, now.second]
             result[0] = setStart(tuplenow, expansion, roundoff)
             result[1] = setFinish(tuplenow, expansion, roundoff)
-            
+    
+    if None in result[0] or None in result[1]:
+        raise Exception(f"{__name__}.{setInterval.__name__}(): The interval has not been defined.")
+    
     if datetime.datetime(*result[0]) < datetime.datetime(*result[1]):
-        return result    
-    raise Exception("Error. The resulting interval is subject to collapse.")
+        return result
+    
+    raise Exception(f"{__name__}.{setInterval.__name__}(): The resulting interval is subject to collapse.")
 
 def setStart(start, expansion, roundoff):
     # start = [1970, 1, 1, 0, 0, 0]

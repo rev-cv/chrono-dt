@@ -24,6 +24,7 @@ from IntervalsGenerate import (
     subtractByIntervals,
     convertIntervals,
 )
+from ch_in_pitchers import getСompleted
 
 class Interval(object):
     def __init__(self, dates = None, roundoff = None, expansion=True):
@@ -189,6 +190,12 @@ class Interval(object):
 
     def qdtf(self):
         pass
+
+    def getСompleted(self, d):
+        if isinstance(d, Chrono):
+            return getСompleted(self.s, self.f, (d.y, d.m, d.d, d.H, d.M, d.S))
+        elif isinstance(d, datetime.datetime):
+            return getСompleted(self.s, self.f, (d.year, d.month, d.day, d.hour, d.minute, d.second))
 
 
     def __str__(self) -> str:

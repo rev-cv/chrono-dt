@@ -1,6 +1,6 @@
 import sys
 import datetime
-from re import findall, sub
+import re
 from ch_validators import *
 from ch_extractors import *
 from ch_pitchers import *
@@ -87,6 +87,8 @@ def setTimeZone(tz):
         return tz
     else:
         raise Exception("<chrono.setTimeZone()>:  time zone unknown!")
+    
+regex_time = re.compile(r"^\d{1,2}:\d{1,2}|^\d{1,4}")
 
 def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
     # Time + Shift
@@ -99,14 +101,27 @@ def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
     string = string.strip()
     # ↑ строка должна начинаться с чисел времени, т.е. с указания на время
 
-    time = findall(r"^\d{1,2}:\d{1,2}|^\d{1,4}", string)
-    if len(time) > 0:
-        t = timeExtractByLogic(time[0])
-        if t is not False:
-            H, M, S = t['hour'], t['min'], t['second']
-            string = sub(r"(^\d{1,2}:\d{1,2}|^\d{1,4})", r"", string)
-            return shiftTextCommand(string, y, m, d, H, M, S)
-        else:
-            raise Exception("ch_catchers.setTimeFromStr(): failed to extract time from string")
+    # time = findall(r"^\d{1,2}:\d{1,2}|^\d{1,4}", string)
+    # if len(time) > 0:
+    #     t = timeExtractByLogic(time[0])
+    #     if t is not False:
+    #         H, M, S = t['hour'], t['min'], t['second']
+    #         string = sub(r"(^\d{1,2}:\d{1,2}|^\d{1,4})", r"", string)
+    #         return shiftTextCommand(string, (y, m, d, H, M, S))
+    #     else:
+    #         raise Exception("ch_catchers.setTimeFromStr(): failed to extract time from string")
     
-    return y, m, d, H, M, S
+    # return y, m, d, H, M, S
+
+    if not string.startswith("+") or not string.startswith("-"):
+        time = regex_time.findall(string)
+        if 0 < len(time):
+            t = timeExtractByLogic(time[0])
+
+            if t is not False:
+                H, M, S = t['hour'], t['min'], t['second']
+                string = regex_time.sub("", string)
+            else:
+                raise Exception("ch_catchers.setTimeFromStr(): failed to extract time from string")
+    
+    return shiftTextCommand(string, (y, m, d, H, M, S))

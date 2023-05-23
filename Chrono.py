@@ -173,30 +173,37 @@ class Chrono(object):
     # ↓ задает TimeZone без изменения состояния времения (СОКР.)
     def setTZ(self, tz):
         self.tz = setTimeZone(tz)
+        return self
 
     # задает дату/время из UnixEpoch
     def setUnixEpoch(self, unixepoch):
         self.y, self.m, self.d, self.H, self.M, self.S = setUnixEpoch(unixepoch)
+        return self
 
     # задает время обрабатывая строку
     def setTimeFromStr(self, string):
         self.H, self.M, self.S = setTimeFromStr(string)
+        return self
 
     # задает дату/время обрабатывая строку
     def setISO(self, iso):
         self.y, self.m, self.d, self.H, self.M, self.S = setISO(iso)
+        return self
         
     # задает дату/время обрабатывая строку
     def setDateTimeFromStr(self, string):
         self.y, self.m, self.d, self.H, self.M, self.S = setDateTimeFromStr(string)
+        return self
 
     # задает дату/время обрабатывая строку согласно regex-шаблону
     def setByReGex(self, regex, string):
         self.y, self.m, self.d, self.H, self.M, self.S = setByReGex(regex, string)
+        return self
 
     # задает дату/время обрабатывая строку согласно текстовому шаблону
     def setByTemplate(self, template, string):
         self.y, self.m, self.d, self.H, self.M, self.S = setByTemplate(template, string)
+        return self
 
     # задает дату из PyQt5.QtCore.QDate
     def setQDate(self, qd):

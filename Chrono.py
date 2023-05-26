@@ -378,7 +378,7 @@ class Chrono(object):
         return template(temp, self.y, self.m, self.d, self.H, self.M, self.S, self.tz)
     
     def __str__(self):
-        temp = 'yyyy-MM-dd hh:mm:ss (tz)'
+        temp = 'yyyy-MM-dd hh:mm (tz)' if getLocalTimeZone() != self.tz else 'yyyy-MM-dd hh:mm'
         return template(temp, self.y, self.m, self.d, self.H, self.M, self.S, self.tz)
     
     def __repr__(self):

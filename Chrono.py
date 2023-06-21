@@ -415,9 +415,7 @@ class Chrono(object):
     
     # вычислить разницу между двумя датами
     def __sub__(self, other):
-        if isinstance(other, datetime):
-            pass
-        elif isinstance(other, self.chrono):
+        if isinstance(other, Chrono):
             d1 = datetime.datetime(self.y, self.m, self.d, self.H, self.M, self.S)
             td = (other.y, other.m, other.d, other.H, other.M, other.S)
             d2 = datetime.datetime(*td) if self.tz == other.tz else datetime.datetime(

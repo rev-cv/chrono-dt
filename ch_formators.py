@@ -206,12 +206,12 @@ def format(temp = r"%a %b %d %H0:%M0:%S0 %Y %Z", y = 1970, m = 1, d = 1, H = 0, 
     regex = r'%DEC'	#декада месяца
     if regex in temp:
         dec = getDecade(d)
-        temp = sub(regex, f'{dec}th', temp)
+        temp = sub(regex, f'{dec}', temp)
 
     regex = r'%DY'	#декада месяца, но отчет с начала года
     if regex in temp:
         dec = getDecadeByYear(m, d)
-        temp = sub(regex, f'{dec}th', temp)
+        temp = sub(regex, f'{dec}', temp)
 
     regex = r'%QUA'	#квартал года
     if regex in temp:

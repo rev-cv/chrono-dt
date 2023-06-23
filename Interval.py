@@ -1,6 +1,6 @@
 
 import datetime
-from ch_in_catchers import setRoundOff, setInterval
+from ch_in_catchers import setRoundOff, setInterval, setIntervalByWeek, setIntervalByDecade
 from ch_in_validators import (
     isReal,
     isDateWithinInterval,
@@ -44,10 +44,7 @@ class Interval(object):
 
     def set(self, dates):
         if type(dates) is tuple or type(dates) is list:
-            if isTupleInterval(dates):
-                # интервал получен как ((1970, 1, 1, 0, 0, 0), (1970, 1, 25, 0, 0, 0))
-                self.s, self.f = setInterval(dates[0], dates[1], self.roundoff, self.expansion)
-            elif isinstance(dates[0], Chrono) and isinstance(dates[1], Chrono):
+            if isinstance(dates[0], Chrono) and isinstance(dates[1], Chrono):
                 # интервал получен как (Chrono, Chronon)
                 if dates[0].tz != dates[1].tz:
                     dates[1].toTimeZone(dates[0].tz)
@@ -64,6 +61,9 @@ class Interval(object):
                     (cf.y, cf.m, cf.d, cf.H, cf.M, cf.S),
                     self.roundoff, self.expansion
                 )
+            elif isTupleInterval(dates):
+                # интервал получен как ((1970, 1, 1, 0, 0, 0), (1970, 1, 25, 0, 0, 0))
+                self.s, self.f = setInterval(dates[0], dates[1], self.roundoff, self.expansion)
             else:
                 raise Exception(f"{__name__}.{self.set.__name__}(): It is not clear what was received.")
             
@@ -85,6 +85,16 @@ class Interval(object):
 
         return self
     
+    # ↓ установка интервала посредством указания недели года
+    def setIntervalByWeek(self, year, week_number=None):
+        self.s, self.f = setIntervalByWeek(year, week_number, self.roundoff, self.expansion)
+        return self
+
+    # ↓ установка интервала посредством указания декады года
+    def setIntervalByDecade(self, year,  decade_number=None):
+        self.s, self.f = setIntervalByDecade(year, decade_number, self.roundoff, self.expansion)
+        return self
+
 
     # QUASTIONS ↲
 

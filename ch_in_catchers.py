@@ -1,7 +1,9 @@
 import datetime
+from math import ceil
 from ch_mutators import shift
 from ch_pitchers import getWeekday
 from Chrono import Chrono
+
 
 def setInterval(start = None, finish = None, roundoff = None, expansion=True):
     # start → [1970, 1, 1, 0, 0, 0]
@@ -171,4 +173,34 @@ def setRoundOff(roundoff):
         return roundoff
     raise Exception("Invalid argument passed for 'roundoff'")
 
+
+def setIntervalByWeek(year, week_number, roundoff, expansion):
+
+    if type(year) is str:
+        # вместо года и номера недели пришел шаблон типа '%Y, WEEK %W'
+        year, week_number = [int(x) for x in year.split(', WEEK ')]
+
+    sd = datetime.datetime(year, 1, 1)
+
+    # ↓ первый понедельник года
+    while sd.weekday() != 0:  # 0 - понедельник
+        sd += datetime.timedelta(days=1)
+
+    # ↓ понедельник выбранной недели
+    td = sd + datetime.timedelta(weeks=week_number - 1)
+
+    return setInterval( (td.year, td.month, td.day, 0, 0, 0), None, roundoff, expansion )
+
+
+def setIntervalByDecade(year, decade_number, roundoff, expansion):
+
+    if type(year) is str:
+        # вместо года и номера недели пришел шаблон типа '%Y, DEC %DY'
+        year, decade_number = [int(x) for x in year.split(', DEC ')]
+
+    d = {2:1,1:11,0:21}
+    month = ceil(decade_number / 3)
+    day = d.get((decade_number-month*3)*1)
+
+    return setInterval( (year, month, day, 0, 0, 0), None, roundoff, expansion )
 

@@ -96,7 +96,8 @@ def isIntervalLess(ds1, df1, ds2, df2):
 def isTupleInterval(interval):
     # проверяет, является ли интервал типа ((1970, 1, 1, 0, 0, 0), (1970, 1, 25, 0, 0, 0))
     isTuple = True
-    
+
+
     if type(interval) is not tuple and type(interval) is not list:
         isTuple = False
 

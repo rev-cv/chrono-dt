@@ -215,11 +215,11 @@ def format(temp = r"%a %b %d %H0:%M0:%S0 %Y %Z", y = 1970, m = 1, d = 1, H = 0, 
 
     regex = r'%QUA'	#квартал года
     if regex in temp:
-        qua = 'IV'
-        if m < 4: qua = 'I'
-        elif m < 7: qua = "II"
-        elif m < 10: qua = "III"
-        temp = sub(regex, f'%Y {qua}', temp)
+        qua = 'Ⅳ'
+        if m < 4: qua = 'Ⅰ'
+        elif m < 7: qua = "Ⅱ"
+        elif m < 10: qua = "Ⅲ"
+        temp = sub(regex, qua, temp)
 
     regex = r'%Y'	#полный год
     if regex in temp:

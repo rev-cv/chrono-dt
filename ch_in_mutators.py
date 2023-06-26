@@ -125,6 +125,11 @@ def chgToStepInterval(s, step = 0, roundoff = "day", expansion = True):
             setFinish((y, m, 1, 0, 0, 5), expansion, roundoff),
         ]
 
+
+def syncIntervalsByTZ(interval_1, interval_2):
+    # синхранизирует два интервала по временным зонам
+    pass
+
 if __name__ == '__main__':
     print(chgToStepInterval((2023, 5, 12), 4, "decade"))
    

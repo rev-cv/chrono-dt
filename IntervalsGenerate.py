@@ -645,14 +645,23 @@ def convertIntervals(intervals, to="tuple") -> list:
     result = list()
 
     for x in intervals:
-        isTuple = isTupleInterval(x)
+
         isInterval = isinstance(x, Interval)
-        if isTuple  and to == "interval":
-            result.append( Interval(x) )
-        elif isInterval and to == "tuple":
+        
+        if isInterval and to == "tuple":
             result.append(( x.s, x.f ))
-        elif isTuple or isInterval:
+
+        elif isInterval and to == "interval":
             result.append(x)
+
+        else:
+            isTuple = isTupleInterval(x)
+
+            if isTuple  and to == "interval":
+                result.append( Interval(x) )
+
+            elif isTuple  and to == "tuple":
+                result.append(x)
     
     return result
 

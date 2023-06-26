@@ -202,6 +202,7 @@ class Interval(object):
         pass
 
     def getСompleted(self, d):
+        # определяет процент завершенности текущего периода на основании переданной даты
         if isinstance(d, Chrono):
             return getСompleted(self.s, self.f, (d.y, d.m, d.d, d.H, d.M, d.S))
         elif isinstance(d, datetime.datetime):
@@ -209,7 +210,6 @@ class Interval(object):
 
 
     def __str__(self) -> str:
-        print(self.s, self.f)
         return f'{self.s[0]}-{self.s[1]}-{self.s[2]} — {self.f[0]}-{self.f[1]}-{self.f[2]}'
     
     

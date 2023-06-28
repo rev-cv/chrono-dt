@@ -1,5 +1,7 @@
 import datetime
 
+
+
 def isReal(start, finish, isExpansion = True, isGenerateError=False):
     # является ли полученный интервал start—finish реальным?
     # Например если start == finish или start > finish ↲
@@ -33,6 +35,8 @@ def isReal(start, finish, isExpansion = True, isGenerateError=False):
         return False
     return True
 
+
+
 def isDateWithinInterval(start, finish, date):
     # входит ли переданная дата в данный период?
 
@@ -48,6 +52,8 @@ def isDateWithinInterval(start, finish, date):
     if start <= date < finish:
         return True
     return False
+
+
 
 def isIntervalWithinInterval(ds, df, in_ds, in_df, isFullEntry=False):
     # входит ли переданный интервал в текущий интервал?
@@ -80,17 +86,22 @@ def isIntervalWithinInterval(ds, df, in_ds, in_df, isFullEntry=False):
         return False
     return False
 
+
+
 def isIntervalMore(ds1, df1, ds2, df2):
     # Длиннее ли интервал?
     if df1 - ds1 > df2 - ds2:
         return True
     return False
 
+
+
 def isIntervalLess(ds1, df1, ds2, df2):
     # короче ли интервал?
     if df1 - ds1 < df2 - ds2:
         return True
     return False
+
 
 
 def isTupleInterval(interval):

@@ -1,7 +1,11 @@
 import pytz
 
+
+
 countDays = {1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
 all_timezones = list(pytz.all_timezones)
+
+
 
 def isDate(y, m, d, isGenerateError=False):
     # является ли переданные значения датой?
@@ -13,6 +17,8 @@ def isDate(y, m, d, isGenerateError=False):
             raise Exception("<chrono._isDate()>: the month is indicated by numbers from 1 to 12")
 
     return isCountDaysInMonth(y, m, d, isGenerateError)
+
+
 
 def isTime(H, M, S, isGenerateError=False):
     # является переданные значения временем?
@@ -28,6 +34,8 @@ def isTime(H, M, S, isGenerateError=False):
         raise Exception("ch_analyzer.isTime(): the hours are incorrect.")
 
     return False
+
+
 
 def isCountDaysInMonth(y, m, d, isGenerateError=False):
     # верно ли количество дней (d) для указанного месяца (m) ↲
@@ -53,6 +61,8 @@ def isCountDaysInMonth(y, m, d, isGenerateError=False):
         else:
             raise Exception("ch_analyzer.isCountDaysInMonth(): the specified day does not exist in the specified month.")
 
+
+
 def isLeapYear(year):
     # является ли год високосным?
     if year % 4 == 0:
@@ -65,6 +75,8 @@ def isLeapYear(year):
                 return False
     else: return False
 
+
+
 def isDayBegun(H, M, S):
     # начался ли день? пока время равно 00:00:00 день считается не начавшимся
     
@@ -75,9 +87,13 @@ def isDayBegun(H, M, S):
         return False
     return True
 
+
+
 def isTimeZone(TimeZone):
     # проверка временной зоны на возможность использования
     return True if TimeZone in all_timezones else False
+
+
 
 def validatorLastDayInMonth(y, m, d):
     # в отличии от isCountDaysInMonth, если проверка не пройдена возвращает последний день месяца

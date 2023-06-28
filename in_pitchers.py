@@ -1,16 +1,20 @@
 from datetime import datetime, timedelta
 
+
+
 def getСompleted(i1, i2, date):
     # определяет процент завершенности текущего периода на основании переданной даты
     dti1 = datetime(*i1).timestamp()
     dti2 = datetime(*i2).timestamp()
     cur = datetime(*date).timestamp()
     if dti1 <= cur < dti2:
-        return round((cur - dti1) * 100 / (dti2 - dti1), 1)
+        return round((cur - dti1) * 100 / (dti2 - dti1), 2)
     elif dti1 <= dti2 <= cur:
         return 0.0
     elif cur <= dti1 <= dti2:
         return 100.0
+
+
 
 def getDuration(i1, i2, measure='second'):
     diff = (datetime(*i2) - datetime(*i1)).total_seconds()
@@ -32,7 +36,6 @@ def getDuration(i1, i2, measure='second'):
         bs = (diff - (bd * 86400 + bh * 3600)) % 60
 
         return { 'y': by, 'd': bd, 'h': bh, 'm': bm, 's': bs }
-    
 
 
 

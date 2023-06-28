@@ -5,6 +5,7 @@ from ch_pitchers import getWeekday
 from Chrono import Chrono
 
 
+
 def setInterval(start = None, finish = None, roundoff = None, expansion=True):
     # start → [1970, 1, 1, 0, 0, 0]
 
@@ -55,6 +56,8 @@ def setInterval(start = None, finish = None, roundoff = None, expansion=True):
     
     raise Exception(f"{__name__}.{setInterval.__name__}(): The resulting interval is subject to collapse.")
 
+
+
 def setStart(start, expansion, roundoff):
     # start = [1970, 1, 1, 0, 0, 0]
     if roundoff is not None:
@@ -64,6 +67,8 @@ def setStart(start, expansion, roundoff):
             return increase(start, roundoff)
     return start
 
+
+
 def setFinish(finish, expansion, roundoff):
     # finish = [1970, 1, 1, 0, 0, 0]
     if roundoff is not None:
@@ -72,6 +77,8 @@ def setFinish(finish, expansion, roundoff):
         elif expansion is False:
             return decrease(finish, roundoff)
     return finish
+
+
 
 def increase(td, ro):
     # смещение даты вправо по исторической шкале
@@ -116,6 +123,8 @@ def increase(td, ro):
         )
 
     return (y, m, d, H, M, S)
+
+
 
 def decrease(td, ro):
     y, m, d, H, M, S = td
@@ -162,16 +171,21 @@ def decrease(td, ro):
         
     return (y, m, d, H, M, S)
 
+
+
 fos = (
     None, 
     'decennary', 'year', 'quarter', 'month', 'decade', 'week', 'day', 'hour', 'minute',
     'dece', 'qua', 'dec', 'min'
 )
 
+
+
 def setRoundOff(roundoff):
     if roundoff in fos:
         return roundoff
     raise Exception("Invalid argument passed for 'roundoff'")
+
 
 
 def setIntervalByWeek(year, week_number, roundoff, expansion):
@@ -190,6 +204,7 @@ def setIntervalByWeek(year, week_number, roundoff, expansion):
     td = sd + datetime.timedelta(weeks=week_number - 1)
 
     return setInterval( (td.year, td.month, td.day, 0, 0, 0), None, roundoff, expansion )
+
 
 
 def setIntervalByDecade(year, decade_number, roundoff, expansion):

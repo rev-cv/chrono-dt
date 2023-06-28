@@ -3,6 +3,8 @@ from re import findall, sub
 from ch_validators import isLeapYear
 from tzlocal import get_localzone
 
+
+
 def shiftTextCommand(string, tdt = [1970, 1, 1, 0, 0, 0]):
     # Text Command
     # задание смещения текстовыми командами
@@ -39,6 +41,8 @@ def shiftTextCommand(string, tdt = [1970, 1, 1, 0, 0, 0]):
     if len(WW) != 0: shift_args['week']   = sum([int(x) for x in WW])
 
     return shift(tdt = tdt, **shift_args)
+
+
 
 def shift( 
         second = 0, year = 0, month = 0, day = 0, hour = 0, minute = 0, week = 0,
@@ -87,6 +91,8 @@ def shift(
         d = count_days[m]
 
     return (y, m, d, H, M, S)
+
+
 
 def toTimeZone(ftz = None, tz = None, tdt = [1970, 1, 1, 0, 0, 0]):
     # переводит время из временной зоны fromTZ в tz

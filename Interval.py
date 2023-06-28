@@ -1,14 +1,14 @@
 
 import datetime
-from ch_in_catchers import setRoundOff, setInterval, setIntervalByWeek, setIntervalByDecade
-from ch_in_validators import (
+from in_catchers import setRoundOff, setInterval, setIntervalByWeek, setIntervalByDecade
+from in_validators import (
     isReal,
     isDateWithinInterval,
     isIntervalWithinInterval,
     isTupleInterval
 )
 from Chrono import Chrono
-from ch_in_mutators import chgToStepInterval
+from in_mutators import chgToStepInterval
 from IntervalsGenerate import (
     merge2Intervals,
     fragmentByDay,
@@ -24,7 +24,9 @@ from IntervalsGenerate import (
     subtractByIntervals,
     convertIntervals,
 )
-from ch_in_pitchers import getСompleted
+from in_pitchers import getСompleted
+
+
 
 class Interval(object):
     def __init__(self, dates = None, roundoff = None, expansion=True):

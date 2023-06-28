@@ -10,12 +10,16 @@ t_weekdays = {
     7: ['Воскресенье', 'Вс', 'Вск', 'Sunday', 'Su', 'Sun'],
 }
 
+
+
 t_month_rus = ['', 
     'Январь', 'Февраль', 'Март', 
     'Апрель', 'Май', 'Июнь', 
     'Июль', 'Август', 'Сентябрь', 
     'Октябрь', 'Ноябрь', 'Декабрь'
 ]
+
+
 
 t_month_rus_abb = ['', 
     'Янв', 'Фев', 'Мар', 
@@ -24,12 +28,16 @@ t_month_rus_abb = ['',
     'Окт', 'Ноя', 'Дек'
 ]
 
+
+
 t_month_eng = ['', 
     'January', 'February', 'March', 
     'April', 'May', 'June', 
     'July', 'August', 'September', 
     'October', 'November', 'December'
 ]
+
+
 
 t_month_eng_abb = ['', 
     'Jan', 'Feb', 'Mar', 
@@ -38,6 +46,8 @@ t_month_eng_abb = ['',
     'Oct', 'Nov', 'Dec'
 ]
 
+
+
 def getDecade(d):
     if d < 11: 
         return 1
@@ -45,11 +55,15 @@ def getDecade(d):
         return 2
     else: 
         return 3
-    
+
+
+
 def getDecadeByYear(m, d):
     # получение декады с начала года для текущей даты
     decs = {3:0,2:1,1:2}
     return m * 3 - decs[getDecade(d)]
+
+
 
 def getWeekday(y, m, d):
     # получить день недели для текущей даты
@@ -58,7 +72,11 @@ def getWeekday(y, m, d):
     result = (d + 31 * month // 12 + year + year // 4 - year // 100 + year // 400) % 7
     return 7 if result == 0 else result
 
+
+
 days_in_months = {1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31}
+
+
 
 def getDayYear(y, m, d):
     # получение количество деней с начала года текущей даты
@@ -67,6 +85,8 @@ def getDayYear(y, m, d):
     for i in range(1, m):
         days += days_in_months[i]
     return days
+
+
 
 def isLeapYear(year):
     # является ли год високосным?
@@ -79,7 +99,8 @@ def isLeapYear(year):
             else: 
                 return False
     else: return False
-    
+
+
 
 def template(temp = r"yyyy-MM-dd hh:mm:ss", y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0, tz = None):
     '''
@@ -162,8 +183,6 @@ def template(temp = r"yyyy-MM-dd hh:mm:ss", y = 1970, m = 1, d = 1, H = 0, M = 0
         temp = sub(regex, f'{tz}', temp)
 
     return temp
-
-
 
 
 

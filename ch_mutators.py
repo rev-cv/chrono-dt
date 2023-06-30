@@ -107,7 +107,7 @@ def toTimeZone(ftz = None, tz = None, tdt = [1970, 1, 1, 0, 0, 0]):
     current_time = datetime.datetime(y, m, d, H, M, S)
 
     current_tz = pytz.timezone(str(ftz))
-    new_tz = pytz.timezone(tz)
+    new_tz = pytz.timezone(str(tz))
 
     current_time = current_tz.localize(current_time)
 

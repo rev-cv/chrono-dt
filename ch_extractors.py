@@ -1,5 +1,4 @@
 from re import findall, match
-
 from ch_validators import isDate, isTime, isCountDaysInMonth
 
 monthNames = {
@@ -16,6 +15,8 @@ monthNames = {
     'nov': 11, 'november': 11, 'нов': 11, 'ноябрь': 11, 'ноября': 11,
     'dec': 12, 'december': 12, 'дек': 12, 'декабрь': 12, 'декабря': 12,
 }
+
+
 
 
 
@@ -88,6 +89,294 @@ def dtExtractByTemplate(template, string):
             template = template.replace(x[0], x[1])
 
     return dtExtractByRegex(template, string)
+
+
+
+def validatorForDateExtractByLogic(func):
+    def wrapper(arg):
+        result = func(arg)
+        if type(result) is list:
+            if isDate(*result):
+                return result
+        return None
+    return wrapper
+
+
+
+@validatorForDateExtractByLogic
+def dateExtractByLogic(string):
+    # попытка угодать дату
+
+    datetime = [0, 1, 1]
+
+    str_digits = findall(r'\d+', string)
+    count_digits = len(str_digits)
+
+
+
+    def oneLineExtract(digit, string):
+        len_0 = len(string)
+
+            
+        if len_0 == 1:
+            # 7 → 2007-01-01
+
+            datetime[0] = digit + 2000
+            return datetime
+
+
+        elif len_0 == 2:
+            # 22 → 2022-01-01
+            # 92 → 1992-01-01
+
+            if 00 <= digit < 50:
+                datetime[0] = digit + 2000
+            elif 50 <= digit < 100:
+                datetime[0] = digit + 1900
+            return datetime
+        
+
+        elif len_0 == 3:
+            # 5 1 2 → 2005-12-01
+            # 5 3 5 → 2005-03-05
+            # 2 2 5 → 2022-05-01
+
+            t1 = int(string[0])
+            t1_2 = int(string[:2])
+            t2_3 = int(string[1:])
+
+            if 2 < t1:
+                datetime[0] = t1 + 2000
+                if 1 <= t2_3 <= 12:
+                    datetime[1] = t2_3
+                else:
+                    datetime[1] = int(string[1])
+                    datetime[2] = int(string[2])
+                return datetime
+            elif 0 <= t1_2 < 50:
+                # вероятно это сокращенный год 21 века + месяц до октября
+                datetime[0] = t1_2 + 2000
+                datetime[1] = int(string[2])
+                return datetime
+            return None
+
+
+        elif len_0 == 4:
+            # 19 52 → 1952-01-01
+            # 20 45 → 2045-01-01
+            # 23 10 → 2023-10-01
+            # 23 15 → 2023-01-05
+
+            t1_2 = int(string[:2])
+            t3_4 = int(string[2:])
+
+            if t1_2 == 19 or t1_2 == 20:
+                datetime[0] = digit
+            elif 0 <= t1_2 < 50 and 1 <= t3_4 <= 12:
+                datetime[0] = t1_2 + 2000
+                datetime[1] = t3_4
+            elif 0 <= t1_2 < 50 and 12 < t3_4:
+                datetime[0] = t1_2 + 2000
+                datetime[1] = int(string[2])
+                datetime[2] = int(string[3])
+            return datetime
+
+
+        elif len_0 == 5:
+            # 9 10 25 → 2009-10-25
+            # 91 5 12 → 1991-05-12
+            # 05 12 6 → 2005-12-06
+            # 2022 5  → 2022-05-01
+
+            t1 = int(string[0])
+            t1_4 = int(string[:4])
+
+
+            if 2 < t1:
+                datetime[0] = t1 + 2000
+                t2_3 = int(string[1:3])
+                t4_5 = int(string[3:])
+
+                if 1 <= t2_3 <= 12 and 1 <= t4_5 <= 31:
+                    datetime[1] = t2_3
+                    datetime[2] = t4_5
+                    return datetime
+                else:
+                    t1_2 = int(string[:2])
+                    t3_4 = int(string[2:4])
+                    t4_5 = int(string[4:])
+
+                    if t1_2 < 50:
+                        datetime[0] = t1_2 + 2000
+                    else:
+                        datetime[0] = t1_2 + 1900
+
+                    if 1 <= t3_4 <= 12:
+                        datetime[1] = t3_4
+                        datetime[2] = int(string[4])
+                    elif 1 <= t4_5 <= 31:
+                        datetime[1] = int(string[2])
+                        datetime[2] = t4_5
+                    else:
+                        return None
+                    
+                    return datetime
+            
+
+            elif t1 == 0:
+                datetime[0] = int(string[:2]) + 2000
+                t3_4 = int(string[2:4])
+                t4_5 = int(string[3:])
+
+                if 1 <= t3_4 <= 12:
+                    datetime[1] = t3_4
+                    datetime[2] = int(string[4])
+                    return datetime
+                elif 1 <= t4_5 <= 31:
+                    datetime[1] = int(string[2])
+                    datetime[2] = int(string[3:])
+                    return datetime
+
+
+            if 1950 < t1_4 < 2100:
+                datetime[0] = t1_4
+                datetime[1] = int(string[4])
+                return datetime
+            else:
+                return None
+
+
+        elif len_0 == 6:
+            # 2022 12
+            # 2022 3 2
+            # 20 12 15
+
+            t1_4 = int(string[:4])
+            t3_4 = int(string[2:4])
+            t5_6 = int(string[4:])
+
+            if 1980 <= t1_4 <= 2050:
+                datetime[0] = t1_4
+
+                if 1 <= t5_6 <= 12:
+                    datetime[1] = t5_6
+                else:
+                    datetime[1] = int(string[4])
+                    datetime[2] = int(string[5])
+            
+            elif 1 <= t3_4 <= 12 and 1 <= t5_6 <= 31:
+                datetime[1] = t3_4
+                datetime[2] = t5_6
+
+                t1_2 = int(string[:2])
+
+                datetime[0] = t1_2 + 2000 if t1_2 < 50 else t1_2 + 1900
+            else:
+                datetime[0] = t1_4
+
+                if 1 <= t5_6 <= 12:
+                    datetime[1] = t5_6
+                else:
+                    datetime[1] = int(string[4])
+                    datetime[2] = int(string[5])
+
+            return datetime
+
+
+        elif len_0 == 7:
+            # 2022 05 4
+            # 2022 5 04
+
+            t5_6 = int(string[4:6])
+            t6_7 = int(string[5:])
+
+            print(t5_6, t6_7)
+
+            if 1 <= t5_6 <= 12:
+                return [int(string[:4]), t5_6, int(string[6])]
+            elif 1 <= t6_7 <= 31:
+                return [int(string[:4]), int(string[5]), t6_7]
+            return None
+
+
+        elif len_0 == 8:
+            year = int(string[:4])
+            month = int(string[4:6])
+            day = int(string[6:])
+
+            if 1 <= month <= 12 and 1 <= day <= 31:
+                return [year, month, day]
+            return None
+
+
+
+    if count_digits != 0:
+        digits = [int(x) for x in str_digits]
+
+        # чем является первое число из 3 возможных?
+        
+
+        if count_digits == 1:
+            return oneLineExtract(digits[0], str_digits[0])
+        else:
+            # если несколько строк с цифрами, значит первое число указывает на год
+            if 890 < digits[0] < 2300:
+                # вероятно это года
+                datetime[0] = digits[0]
+            elif 00 <= digits[0] < 50:
+                # вероятно это сокращенный год 21 века
+                datetime[0] = digits[0] + 2000
+            elif 50 <= digits[0] < 100:
+                # вероятно это сокращенный год 20 века
+                datetime[0] = digits[0] + 1900
+            else:
+                return None
+            
+        if count_digits == 2 or count_digits == 3:
+            len_1 = len(str_digits[1])
+
+            if len_1 == 1:
+                datetime[1] = digits[1]
+            elif len_1 == 2:
+                if 1 <= digits[1] <= 12:
+                    datetime[1] = digits[1]
+                else:
+                    datetime[1] = int(str_digits[1][0])
+                    datetime[2] = int(str_digits[1][1])
+                    return datetime
+            elif len_1 == 3:
+                t1_2 = int(str_digits[1][:2])
+                t2_3 = int(str_digits[1][1:])
+
+                if 1 <= t1_2 <= 12:
+                    datetime[1] = t1_2
+                    datetime[2] = int(str_digits[1][2])
+                    return datetime
+                elif 1 <= t2_3 <= 31:
+                    datetime[1] = int(str_digits[1][0])
+                    datetime[2] = t2_3
+                    return datetime
+                return None
+            elif len_1 == 4:
+                t1_2 = int(str_digits[1][:2])
+                t3_4 = int(str_digits[1][2:])
+
+                if 1 <= t1_2 <= 12 and 1 <= t3_4 <= 31:
+                    datetime[1] = t1_2
+                    datetime[2] = t3_4
+                    return datetime
+                return None
+
+
+        if count_digits == 3:
+            if 1 <= digits[2] <= 31:
+                datetime[2] = digits[2]
+                return datetime
+            return None
+        
+        return datetime
+
+
 
 
 
@@ -282,3 +571,9 @@ def timeExtractByLogic(findings):
     if hms['hour'] is not None and hms['min'] is not None: 
         return hms
     else: return None
+
+
+
+if __name__ == "__main__":
+    a = dateExtractByLogic("2023 02 30")
+    print(a)

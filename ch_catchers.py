@@ -131,6 +131,7 @@ def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
     # ↑ строка должна начинаться с чисел времени, т.е. с указания на время
 
 
+
     if not string.startswith("+") or not string.startswith("-"):
         time = regex_time.findall(string)
         if 0 < len(time):
@@ -141,5 +142,6 @@ def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
                 string = regex_time.sub("", string)
             else:
                 raise Exception("ch_catchers.setTimeFromStr(): failed to extract time from string")
+
 
     return shiftTextCommand(string, (y, m, d, H, M, S))

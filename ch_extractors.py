@@ -223,7 +223,7 @@ def dateExtractByLogic(string):
                     return datetime
             
 
-            elif t1 == 0:
+            elif t1 <= 2:
                 datetime[0] = int(string[:2]) + 2000
                 t3_4 = int(string[2:4])
                 t4_5 = int(string[3:])
@@ -575,5 +575,5 @@ def timeExtractByLogic(findings):
 
 
 if __name__ == "__main__":
-    a = dateExtractByLogic("2023 02 30")
+    a = dateExtractByLogic("23716")
     print(a)

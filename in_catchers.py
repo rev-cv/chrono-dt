@@ -213,9 +213,10 @@ def setIntervalByDecade(year, decade_number, roundoff, expansion):
         # вместо года и номера недели пришел шаблон типа '%Y, DEC %DY'
         year, decade_number = [int(x) for x in year.split(', DEC ')]
 
-    d = {2:1,1:11,0:21}
-    month = ceil(decade_number / 3)
-    day = d.get((decade_number-month*3)*1)
+    if not 1 <= decade_number <= 36:
+        raise ValueError("Недопустимый номер декады. Декада должна быть в диапазоне от 1 до 36.")
+
+    month = (decade_number - 1) // 3 + 1
+    day = (decade_number - 1) % 3 * 10 + 1
 
     return setInterval( (year, month, day, 0, 0, 0), None, roundoff, expansion )
-

@@ -51,7 +51,7 @@ def shift(
     
     y, m, d, H, M, S = tdt
     delta_seconds = second + (minute * 60) + (hour * 3600) +  (day * 86400) + (week * 86400 * 7)
-    
+
     dt = datetime.datetime(y, m, d, H, M, S) + datetime.timedelta(seconds = delta_seconds)
     y, m, d = dt.year, dt.month, dt.day
     H, M, S = dt.hour, dt.minute, dt.second

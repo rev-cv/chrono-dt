@@ -62,7 +62,7 @@ def getOccupancyPercent(s, f, intervals) -> float:
     diff = (datetime.datetime(*f) - datetime.datetime(*s)).total_seconds()
     # ↓ временная заполненность времени интервалами
     frag = occIntervals(intervals)
-    return round(frag * 100 / diff, 1)
+    return round(frag * 100 / diff, 2)
 
 
 
@@ -544,11 +544,11 @@ def fragmentByQuarter(s, f) -> list:
 
     if ms == 1 and ds == 1 and isDayBegun(Hs, Ms, Ss) is False:
         ms = 1 # если 1 января и еще не начался день, то первый квартал
-    elif ms <= 3:
+    elif ms < 4 or (ms == 4 and ds == 1 and isDayBegun(Hs, Ms, Ss) is False):
         ms, current_quarter = 4, 2
-    elif ms <= 6:
+    elif ms < 7 or (ms == 7 and ds == 1 and isDayBegun(Hs, Ms, Ss) is False):
         ms, current_quarter = 7, 3
-    elif ms <= 9:
+    elif ms < 10 or (ms == 10 and ds == 1 and isDayBegun(Hs, Ms, Ss) is False):
         ms, current_quarter = 10, 4
     else:
         ys, ms = ys+1, 1
@@ -784,14 +784,8 @@ if __name__ == '__main__':
     #     print(f'{x[0][3]:0>2}:{x[0][4]:0>2} - {x[1][3]:0>2}:{x[1][4]:0>2}')
 
     print(
-        getOccupancyPercent(
-            (2023, 5, 13, 0, 0, 0),
-            (2023, 5, 14, 0, 0, 0),
-            a
-        )
+        fragmentByQuarter((2023, 7, 1, 0, 0, 0), (2023, 10, 1, 0, 0, 0))
     )
 
-    for x in findSkipIntervals(a):
-        print(f'{x[0][3]:0>2}:{x[0][4]:0>2} - {x[1][3]:0>2}:{x[1][4]:0>2}')
 
 

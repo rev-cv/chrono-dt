@@ -96,7 +96,7 @@ def validatorForDateExtractByLogic(func):
     def wrapper(arg):
         result = func(arg)
         if type(result) is list:
-            if isDate(*result):
+            if isDate(*result) and result[0] > 1500:
                 return result
         return None
     return wrapper
@@ -289,8 +289,6 @@ def dateExtractByLogic(string):
 
             t5_6 = int(string[4:6])
             t6_7 = int(string[5:])
-
-            print(t5_6, t6_7)
 
             if 1 <= t5_6 <= 12:
                 return [int(string[:4]), t5_6, int(string[6])]

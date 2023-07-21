@@ -137,7 +137,7 @@ def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
         if 0 < len(time):
             t = timeExtractByLogic(time[0])
 
-            if t is not False:
+            if t is not None:
                 H, M, S = t['hour'], t['min'], t['second']
                 string = regex_time.sub("", string)
             else:
@@ -145,3 +145,7 @@ def setTimeShift(string, y = 1970, m = 1, d = 1, H = 0, M = 0, S = 0):
 
 
     return shiftTextCommand(string, (y, m, d, H, M, S))
+
+
+if __name__ == "__main__":
+    setTimeShift("5555")

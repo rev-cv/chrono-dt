@@ -23,6 +23,7 @@ from IntervalsGenerate import (
     fragmentByIntervals,
     subtractByIntervals,
     convertIntervals,
+    getOccupancyPercent
 )
 from in_pitchers import getСompleted
 
@@ -209,7 +210,9 @@ class Interval(object):
             return getСompleted(self.s, self.f, (d.y, d.m, d.d, d.H, d.M, d.S))
         elif isinstance(d, datetime.datetime):
             return getСompleted(self.s, self.f, (d.year, d.month, d.day, d.hour, d.minute, d.second))
-
+        
+    def getOccupancyPercent(self, intervals) -> float:
+        return getOccupancyPercent(self.s, self.f, intervals)
 
     def __str__(self) -> str:
         return f'{self.s[0]}-{self.s[1]}-{self.s[2]} — {self.f[0]}-{self.f[1]}-{self.f[2]}'

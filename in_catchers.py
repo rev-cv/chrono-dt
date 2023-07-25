@@ -3,7 +3,7 @@ from math import ceil
 from ch_mutators import shift
 from ch_pitchers import getWeekday
 from Chrono import Chrono
-
+from re import match, findall, MULTILINE
 
 
 def setInterval(start = None, finish = None, roundoff = None, expansion=True):
@@ -220,3 +220,77 @@ def setIntervalByDecade(year, decade_number, roundoff, expansion):
     day = (decade_number - 1) % 3 * 10 + 1
 
     return setInterval( (year, month, day, 0, 0, 0), None, roundoff, expansion )
+
+
+def setIntervalByName(name:str):
+    # на основании анализа имени генерит интервал
+
+    # 2023, 12 Jun          12 июня 2023 года
+    # 2023, DEC 15          15 декада 2023 года
+    # 2023, WEEK 12         12 неделя 2023 года 
+    # 2023, Jun             июнь 2023 года
+    # 2023, QUA Ⅱ           2 квартал 2023 года (апрель—июнь)
+    # 2023                  2023 год
+    # 2020's                20е годы (20—30)
+
+
+    day = match(r'\d{4}, \d{2} [A-Z][a-z]{2}', name)
+    if day is not None:
+        date = Chrono(False).setByTemplate('yyyy, dd MMM', name)
+        return setInterval(
+            (date.y, date.m, date.d, date.H, date.M, date.S),
+            roundoff="day"
+        )
+    
+
+    week = findall(r'(\d{4}), WEEK (\d{1,2})', name)
+    if 0 < len(week):
+        return setIntervalByWeek(int(week[0][0]), int(week[0][1]), 'week', True)
+    
+
+    dec = findall(r'(\d{4}), DEC (\d{1,2})', name)
+    if 0 < len(week):
+        return setIntervalByDecade(int(dec[0][0]), int(dec[0][1]), 'decade', True)
+    
+
+    month = match(r'\d{4}, [A-Z][a-z]{2}', name)
+    if month is not None:
+        date = Chrono(False).setByTemplate('yyyy, MMM', name)
+        return setInterval(
+            (date.y, date.m, date.d, date.H, date.M, date.S),
+            roundoff="month"
+        )
+    
+
+    dece = findall(r"(\d{4})'s", name)
+    if dece is not None and name[-2:] == "'s":
+        return setInterval( (int(dece[0]), 1, 1, 0, 0, 0), roundoff="dece" )
+    
+
+    qua = findall(r'(\d{4}), QUA ([ⅠⅡⅢⅣ])', name)
+    if qua is not None and "QUA" in name:
+        y, q = qua[0]
+        if q == "Ⅰ":
+            return setInterval( (int(y), 1, 1, 0, 0, 0), roundoff="quarter" )
+        elif q == "Ⅱ":
+            return setInterval( (int(y), 4, 1, 0, 0, 0), roundoff="quarter" )
+        elif q == "Ⅲ":
+            return setInterval( (int(y), 7, 1, 0, 0, 0), roundoff="quarter" )
+        else:
+            return setInterval( (int(y), 10, 1, 0, 0, 0), roundoff="quarter" )
+
+
+    year = dece = findall(r"(\d{4})", name)
+    if year is not None:
+        return setInterval( (int(year[0]), 1, 1, 0, 0, 0), roundoff="year" )
+
+
+if __name__ == "__main__":
+    # print(
+    #     setIntervalByName("2023, DEC 21")
+    # )
+
+    print(
+        increase((2023, 7, 20, 45, 35, 0), "decade")
+    )
+    

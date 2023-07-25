@@ -1,6 +1,12 @@
 
 import datetime
-from in_catchers import setRoundOff, setInterval, setIntervalByWeek, setIntervalByDecade
+from in_catchers import (
+    setRoundOff, 
+    setInterval, 
+    setIntervalByWeek, 
+    setIntervalByDecade,
+    setIntervalByName
+)
 from in_validators import (
     isReal,
     isDateWithinInterval,
@@ -69,6 +75,9 @@ class Interval(object):
                 self.s, self.f = setInterval(dates[0], dates[1], self.roundoff, self.expansion)
             else:
                 raise Exception(f"{__name__}.{self.set.__name__}(): It is not clear what was received.")
+        
+        elif type(dates) is str:
+            self.s, self.f = setIntervalByName(dates)
             
         elif isinstance(dates, Interval):
             # интервал получен как Interval

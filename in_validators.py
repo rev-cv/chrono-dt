@@ -76,11 +76,11 @@ def isIntervalWithinInterval(ds, df, in_ds, in_df, isFullEntry=False):
     if type(in_df) is list or type(in_df) is tuple:
         in_df = datetime.datetime(*in_df)
 
-    if isFullEntry is False:
+    if isFullEntry is True:
         if in_ds <= ds < df <= in_df:
             return True
         return False
-    elif isFullEntry is True:
+    elif isFullEntry is False:
         if in_ds < ds < in_df or in_ds < df < in_df:
             return True
         return False

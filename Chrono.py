@@ -93,6 +93,10 @@ class Chrono(object):
         elif isinstance(y, datetime.datetime):
             self.setDT(y)
 
+        elif isinstance(y, datetime.date):
+            self.setD(y)
+            self.H, self.M, self.S = 0, 0, 0
+            
         elif isinstance(y, Chrono):
             # является ли объект chrono
             self.setChrono(y)
@@ -392,27 +396,33 @@ class Chrono(object):
 
     #self < other
     def __lt__(self, other):
-        return True if self.getUnixEpoch() < other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() < other.getUnixEpoch() else False
+        except: return False
 
     #self <= other
     def __le__(self, other):
-        return True if self.getUnixEpoch() <= other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() <= other.getUnixEpoch() else False
+        except: return False
 
     #self == other
     def __eq__(self, other):
-        return True if self.getUnixEpoch() == other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() == other.getUnixEpoch() else False
+        except: return False
 
     #self != other
     def __ne__(self, other):
-        return True if self.getUnixEpoch() != other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() != other.getUnixEpoch() else False
+        except: return False
 
     #self > other
     def __gt__(self, other):
-        return True if self.getUnixEpoch() > other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() > other.getUnixEpoch() else False
+        except: return False
 
     #self >= other
     def __ge__(self, other):
-        return True if self.getUnixEpoch() >= other.getUnixEpoch() else False
+        try: return True if self.getUnixEpoch() >= other.getUnixEpoch() else False
+        except: return False
     
     # вычислить разницу между двумя датами
     def __sub__(self, other):

@@ -24,6 +24,7 @@ def shiftTextCommand(string, tdt = [1970, 1, 1, 0, 0, 0]):
 
     yy = findall(r'([- +]\d+)y', sh)
     mo = findall(r'([- +]\d+)mo', sh)
+    mo += findall(r'([- +]\d+)M', sh)
     dd = findall(r'([- +]\d+)d', sh)
     HH = findall(r'([- +]\d+)h', sh)
     MM = findall(r'([- +]\d+)m ', sh)

@@ -106,6 +106,9 @@ class Interval(object):
     def setIntervalByDecade(self, year,  decade_number=None):
         self.s, self.f = setIntervalByDecade(year, decade_number, self.roundoff, self.expansion)
         return self
+    
+    def setIntervalByName(self, name:str):
+        self.s, self.f = setIntervalByName(name)
 
 
     # QUASTIONS ↲

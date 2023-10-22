@@ -249,16 +249,16 @@ def fragmentByIntervals(s, f, intervals) -> list:
     # задать фрагментацию для интервала s—f
     # Из переданного исписка исключаются интервалы не входящие в self
     # интервалы входящие частично в self обрезаются 
-    s1 = datetime.datetime(*s).timestamp()
-    f1 = datetime.datetime(*f).timestamp()
+    s1 = datetime.datetime(*s)
+    f1 = datetime.datetime(*f)
 
 
     fragments = list()
 
 
     for x in intervals:
-        s2 = datetime.datetime(*x[0]).timestamp()
-        f2 = datetime.datetime(*x[1]).timestamp()
+        s2 = datetime.datetime(*x[0])
+        f2 = datetime.datetime(*x[1])
 
         if s1 <= s2 and f2 <= f1:
             # интервал входит в self
